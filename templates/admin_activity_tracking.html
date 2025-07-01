@@ -1,0 +1,211 @@
+{% extends "admin_layout.html" %}
+
+{% block title %}Activity Tracking - Admin Dashboard{% endblock %}
+
+{% block header_title %}Activity Tracking{% endblock %}
+
+{% block additional_styles %}
+<style>
+  .activity-type {
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    display: inline-block;
+  }
+  
+  .activity-type.walking {
+    background-color: var(--secondary-light);
+    color: var(--secondary);
+  }
+  
+  .activity-type.running {
+    background-color: var(--primary-light);
+    color: var(--primary);
+  }
+  
+  .activity-type.cycling {
+    background-color: rgba(139, 92, 246, 0.1);
+    color: #8b5cf6;
+  }
+  
+  .activity-type.swimming {
+    background-color: var(--accent-light);
+    color: var(--accent);
+  }
+  
+  .activity-type.gym {
+    background-color: rgba(220, 38, 38, 0.1);
+    color: var(--danger);
+  }
+  
+  .activity-type.yoga {
+    background-color: rgba(107, 114, 128, 0.1);
+    color: var(--text-light);
+  }
+  
+  .activity-type.other {
+    background-color: rgba(75, 85, 99, 0.1);
+    color: #4b5563;
+  }
+  
+  .search-tools {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  
+  .search-tools input, 
+  .search-tools select {
+    padding: 10px 15px;
+    border: 1px solid var(--glass-border);
+    border-radius: var(--border-radius);
+    background-color: var(--glass-bg);
+    transition: var(--transition);
+    flex: 1;
+    min-width: 150px;
+  }
+  
+  .search-tools input:focus,
+  .search-tools select:focus {
+    border-color: var(--primary);
+    outline: none;
+    box-shadow: 0 0 0 3px var(--primary-light);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Statistics Overview -->
+<div class="stats-cards">
+  <div class="stat-card">
+    <div class="stat-value" id="total-activities">{{ activities|length }}</div>
+    <div class="stat-label">Total Activities</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value" id="total-steps">0</div>
+    <div class="stat-label">Total Steps</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value" id="total-calories">0</div>
+    <div class="stat-label">Total Calories</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value" id="total-minutes">0</div>
+    <div class="stat-label">Activity Minutes</div>
+  </div>
+</div>
+
+<div class="search-tools">
+  <input type="text" id="search-user" placeholder="Search by username...">
+  <select id="filter-activity">
+    <option value="all">All Activities</option>
+    <option value="walking">Walking</option>
+    <option value="running">Running</option>
+    <option value="cycling">Cycling</option>
+    <option value="swimming">Swimming</option>
+    <option value="gym">Gym Workout</option>
+    <option value="yoga">Yoga</option>
+    <option value="other">Other</option>
+  </select>
+  <input type="date" id="filter-date" placeholder="Filter by date">
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h3>All Activity Records</h3>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>User</th>
+        <th>Activity</th>
+        <th>Duration</th>
+        <th>Steps</th>
+        <th>Calories</th>
+        <th>Date</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="activities-table">
+      {% for activity in activities %}
+      <tr data-activity-type="{{ activity.activity_type }}">
+        <td>{{ activity.id }}</td>
+        <td><a href="{{ url_for('user_history', user_id=activity.user_id) }}" class="btn btn-primary btn-sm">{{ activity.username }}</a></td>
+        <td><span class="activity-type {{ activity.activity_type }}">{{ activity.activity_type|title }}</span></td>
+        <td>{{ activity.duration }} mins</td>
+        <td>{{ activity.steps if activity.steps else '-' }}</td>
+        <td>{{ activity.calories_burned if activity.calories_burned else '-' }}</td>
+        <td>{{ activity.activity_date if activity.activity_date else activity.created_at }}</td>
+        <td>
+          <a href="{{ url_for('user_history', user_id=activity.user_id) }}" class="btn btn-primary btn-sm">View User</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="pagination">
+  <a href="#" class="active">1</a>
+  <a href="#">2</a>
+  <a href="#">3</a>
+  <a href="#">Next »</a>
+</div>
+{% endblock %}
+
+{% block additional_scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('search-user');
+    const activityFilter = document.getElementById('filter-activity');
+    const dateFilter = document.getElementById('filter-date');
+    const activitiesTable = document.getElementById('activities-table');
+    const rows = activitiesTable.querySelectorAll('tr');
+    
+    // Calculate totals
+    let totalSteps = 0;
+    let totalCalories = 0;
+    let totalMinutes = 0;
+    
+    rows.forEach(row => {
+      const steps = parseInt(row.querySelector('td:nth-child(5)').textContent) || 0;
+      const calories = parseInt(row.querySelector('td:nth-child(6)').textContent) || 0;
+      const duration = parseInt(row.querySelector('td:nth-child(4)').textContent) || 0;
+      
+      totalSteps += steps;
+      totalCalories += calories;
+      totalMinutes += duration;
+    });
+    
+    document.getElementById('total-steps').textContent = totalSteps.toLocaleString();
+    document.getElementById('total-calories').textContent = totalCalories.toLocaleString();
+    document.getElementById('total-minutes').textContent = totalMinutes.toLocaleString();
+    
+    // Filter function
+    function filterActivities() {
+      const searchTerm = searchInput.value.toLowerCase();
+      const filterType = activityFilter.value;
+      const filterDateVal = dateFilter.value;
+      
+      rows.forEach(row => {
+        const username = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+        const activityType = row.getAttribute('data-activity-type');
+        const activityDate = row.querySelector('td:nth-child(7)').textContent;
+        
+        const nameMatch = username.includes(searchTerm);
+        const typeMatch = filterType === 'all' || activityType === filterType;
+        const dateMatch = !filterDateVal || activityDate.includes(filterDateVal);
+        
+        row.style.display = nameMatch && typeMatch && dateMatch ? '' : 'none';
+      });
+    }
+    
+    searchInput.addEventListener('input', filterActivities);
+    activityFilter.addEventListener('change', filterActivities);
+    dateFilter.addEventListener('change', filterActivities);
+  });
+</script>
+{% endblock %} 

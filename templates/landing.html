@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Personal Health Assistant - Welcome</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Arial', sans-serif;
+      background: linear-gradient(135deg, #e8f4fc, #d1f5e5);
+      min-height: 100vh;
+    }
+    
+    .landing-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    .landing-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 0;
+    }
+    
+    .logo-section {
+      display: flex;
+      align-items: center;
+    }
+    
+    .logo-section img {
+      width: 60px;
+      height: 60px;
+      border-radius: 10px;
+      margin-right: 15px;
+    }
+    
+    .logo-text h1 {
+      margin: 0;
+      font-size: 1.8rem;
+      color: #2c3e50;
+    }
+    
+    .logo-text p {
+      margin: 5px 0 0;
+      font-size: 1rem;
+      color: #7f8c8d;
+    }
+    
+    .auth-buttons {
+      display: flex;
+      gap: 15px;
+    }
+    
+    .hero-section {
+      display: flex;
+      align-items: center;
+      margin: 50px 0;
+    }
+    
+    .hero-text {
+      flex: 1;
+      padding-right: 40px;
+    }
+    
+    .hero-text h2 {
+      font-size: 2.5rem;
+      color: #2c3e50;
+      margin-bottom: 20px;
+    }
+    
+    .hero-text p {
+      font-size: 1.1rem;
+      color: #34495e;
+      line-height: 1.6;
+      margin-bottom: 30px;
+    }
+    
+    .hero-image {
+      flex: 1;
+      text-align: center;
+    }
+    
+    .hero-image img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 10px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+    
+    .features-section {
+      margin: 50px 0;
+    }
+    
+    .features-section h2 {
+      text-align: center;
+      font-size: 2rem;
+      color: #2c3e50;
+      margin-bottom: 40px;
+    }
+    
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 30px;
+    }
+    
+    .feature-card {
+      background-color: #fff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      text-align: center;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .feature-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+    
+    .feature-icon {
+      font-size: 2.5rem;
+      color: #2ecc71;
+      margin-bottom: 20px;
+    }
+    
+    .feature-card h3 {
+      font-size: 1.3rem;
+      color: #2c3e50;
+      margin-bottom: 15px;
+    }
+    
+    .feature-card p {
+      font-size: 1rem;
+      color: #7f8c8d;
+      line-height: 1.5;
+    }
+    
+    .cta-section {
+      background-color: #fff;
+      padding: 60px;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      text-align: center;
+      margin: 60px 0;
+    }
+    
+    .cta-section h2 {
+      font-size: 2rem;
+      color: #2c3e50;
+      margin-bottom: 20px;
+    }
+    
+    .cta-section p {
+      font-size: 1.1rem;
+      color: #34495e;
+      line-height: 1.6;
+      margin-bottom: 30px;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    .btn-large {
+      display: inline-block;
+      padding: 15px 30px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      text-decoration: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .btn-primary {
+      background-color: #2ecc71;
+      color: white;
+      border: 1px solid #2ecc71;
+    }
+    
+    .btn-primary:hover {
+      background-color: #27ae60;
+      transform: translateY(-2px);
+    }
+    
+    .btn-secondary {
+      background-color: transparent;
+      color: #3498db;
+      border: 1px solid #3498db;
+    }
+    
+    .btn-secondary:hover {
+      background-color: rgba(52, 152, 219, 0.1);
+      transform: translateY(-2px);
+    }
+    
+    .footer {
+      text-align: center;
+      padding: 30px 0;
+      color: #7f8c8d;
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+      .features-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .hero-section {
+        flex-direction: column;
+        text-align: center;
+      }
+      
+      .hero-text {
+        padding-right: 0;
+        margin-bottom: 30px;
+      }
+      
+      .features-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .landing-header {
+        flex-direction: column;
+      }
+      
+      .auth-buttons {
+        margin-top: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="landing-container">
+    <div class="landing-header">
+      <div class="logo-section">
+        <img src="{{ url_for('static', filename='images/logo1.jpg') }}" alt="Health Assistant Logo">
+        <div class="logo-text">
+          <h1>AI Based Personal Health Assistant</h1>
+          <p>Your health, tracked and managed in one place</p>
+        </div>
+      </div>
+      <div class="auth-buttons">
+        <a href="{{ url_for('login') }}" class="btn-secondary">Login</a>
+        <a href="{{ url_for('signup') }}" class="btn-primary">Sign Up</a>
+      </div>
+    </div>
+    
+    <div class="hero-section">
+      <div class="hero-text">
+        <h2>Take Control of Your Health Journey</h2>
+        <p>Our AI-powered Personal Health Assistant is designed to help you monitor, predict, and improve your health metrics with personalized insights and recommendations.</p>
+        <a href="{{ url_for('signup') }}" class="btn-large btn-primary">Get Started</a>
+      </div>
+      <div class="hero-image">
+        <img src="{{ url_for('static', filename='images/hero-image.jpg') }}" alt="Health Assistant Dashboard" onerror="this.src='https://via.placeholder.com/500x350?text=Health+Assistant'">
+      </div>
+    </div>
+    
+    <div class="features-section">
+      <h2>Key Features</h2>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">
+            <i class="fas fa-heartbeat"></i>
+          </div>
+          <h3>Disease Prediction</h3>
+          <p>Early detection of potential health issues using AI-based symptom analysis and prediction models.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <i class="fas fa-running"></i>
+          </div>
+          <h3>Activity Tracking</h3>
+          <p>Monitor your physical activities, steps, and exercises to maintain an active lifestyle.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <i class="fas fa-pills"></i>
+          </div>
+          <h3>Medication Reminders</h3>
+          <p>Never miss a dose with personalized medication reminders and schedules.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <i class="fas fa-weight"></i>
+          </div>
+          <h3>BMI Calculator</h3>
+          <p>Track your Body Mass Index and receive tailored recommendations for a healthier weight.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <i class="fas fa-clipboard-list"></i>
+          </div>
+          <h3>Health Monitoring</h3>
+          <p>Keep track of vital signs, glucose levels, and other important health metrics in one place.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <i class="fas fa-file-medical"></i>
+          </div>
+          <h3>Record Management</h3>
+          <p>Store and manage all your medical records and documents securely in the cloud.</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="cta-section">
+      <h2>Start Your Health Journey Today</h2>
+      <p>Join thousands of users who have taken control of their health with our Personal Health Assistant. Sign up for free and unlock the full potential of AI-powered health management.</p>
+      <a href="{{ url_for('signup') }}" class="btn-large btn-primary">Create Your Account</a>
+    </div>
+    
+    <div class="footer">
+      <p>© 2023 Personal Health Assistant. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html> 

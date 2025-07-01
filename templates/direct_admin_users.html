@@ -1,0 +1,320 @@
+{% extends "admin_layout.html" %}
+
+{% block title %}User Management - Admin Dashboard{% endblock %}
+
+{% block header_title %}User Management{% endblock %}
+
+{% block additional_styles %}
+<style>
+  .admin-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+  }
+  
+  .search-bar {
+    display: flex;
+    align-items: center;
+    max-width: 400px;
+    width: 100%;
+  }
+  
+  .search-input {
+    flex: 1;
+    padding: 12px 15px;
+    border: 1px solid var(--glass-border);
+    border-radius: var(--border-radius) 0 0 var(--border-radius);
+    font-size: 0.95rem;
+    transition: var(--transition);
+    background-color: var(--glass-bg);
+  }
+  
+  .search-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-light);
+  }
+  
+  .search-btn {
+    background-color: var(--primary);
+    color: white;
+    border: none;
+    padding: 12px 15px;
+    border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    cursor: pointer;
+    transition: var(--transition);
+  }
+  
+  .search-btn:hover {
+    background-color: var(--primary-dark);
+  }
+  
+  .status-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  
+  .status-badge.admin {
+    background-color: var(--accent-light);
+    color: var(--accent);
+  }
+  
+  .status-badge.user {
+    background-color: var(--primary-light);
+    color: var(--primary);
+  }
+  
+  .action-cell {
+    white-space: nowrap;
+  }
+  
+  .modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 2000;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .modal.show {
+    display: flex;
+    animation: modalFadeIn 0.3s;
+  }
+  
+  .modal-content {
+    background-color: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--border-radius);
+    width: 90%;
+    max-width: 600px;
+    box-shadow: var(--glass-shadow);
+  }
+  
+  @keyframes modalFadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  .modal-header {
+    padding: 20px;
+    border-bottom: 1px solid var(--glass-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .modal-header h2 {
+    margin: 0;
+    font-size: 1.3rem;
+    color: var(--primary);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text-light);
+    transition: var(--transition);
+  }
+  
+  .modal-close:hover {
+    color: var(--danger);
+  }
+  
+  .modal-body {
+    padding: 20px;
+  }
+  
+  .form-group {
+    margin-bottom: 20px;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--text-dark);
+  }
+  
+  .checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .modal-footer {
+    padding: 15px 20px;
+    border-top: 1px solid var(--glass-border);
+    text-align: right;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Controls -->
+<div class="admin-controls">
+  <form class="search-bar" action="{{ url_for('users') }}" method="GET">
+    <input type="text" name="search" class="search-input" placeholder="Search by username or email..." value="{{ search_query if search_query }}">
+    <button type="submit" class="search-btn">
+      <i class="fas fa-search"></i>
+    </button>
+  </form>
+  
+  <button type="button" class="btn btn-primary" onclick="openAddUserModal()">
+    <i class="fas fa-plus"></i>
+    Add New User
+  </button>
+</div>
+
+<!-- Users Table -->
+<div class="card">
+  <div class="card-header">
+    <h3>User Accounts</h3>
+    <span>Total: {{ users|length }} users</span>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Username</th>
+        <th>Email</th>
+        <th>Role</th>
+        <th>Joined</th>
+        <th>Last Login</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for user in users %}
+      <tr>
+        <td>#{{ user.id }}</td>
+        <td>{{ user.username }}</td>
+        <td>{{ user.email }}</td>
+        <td>
+          {% if user.is_admin %}
+          <span class="status-badge admin">Admin</span>
+          {% else %}
+          <span class="status-badge user">User</span>
+          {% endif %}
+        </td>
+        <td>{{ user.created_at }}</td>
+        <td>{{ user.last_login if user.last_login else 'Never' }}</td>
+        <td class="action-cell">
+          <a href="{{ url_for('user_history', user_id=user.id) }}" class="btn btn-primary">
+            <i class="fas fa-eye"></i> View
+          </a>
+          <button class="btn btn-danger" onclick="confirmDelete('{{ user.id }}', '{{ user.username }}')">
+            <i class="fas fa-trash"></i> Delete
+          </button>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Pagination -->
+{% if total_pages > 1 %}
+<div class="pagination">
+  {% if page > 1 %}
+  <a href="{{ url_for('users', page=page-1, search=search_query) }}">
+    <i class="fas fa-chevron-left"></i>
+  </a>
+  {% endif %}
+  
+  {% for p in range(1, total_pages + 1) %}
+  <a href="{{ url_for('users', page=p, search=search_query) }}" class="{{ 'active' if p == page else '' }}">
+    {{ p }}
+  </a>
+  {% endfor %}
+  
+  {% if page < total_pages %}
+  <a href="{{ url_for('users', page=page+1, search=search_query) }}">
+    <i class="fas fa-chevron-right"></i>
+  </a>
+  {% endif %}
+</div>
+{% endif %}
+
+<!-- Add User Modal -->
+<div id="addUserModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2><i class="fas fa-user-plus"></i> Add New User</h2>
+      <button type="button" class="modal-close" onclick="closeAddUserModal()">&times;</button>
+    </div>
+    <form action="{{ url_for('users') }}" method="POST">
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input type="text" class="form-control" id="username" name="username" required>
+        </div>
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" class="form-control" id="email" name="email" required>
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" class="form-control" id="password" name="password" required>
+        </div>
+        <div class="form-group">
+          <label for="confirm_password">Confirm Password</label>
+          <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+        </div>
+        <div class="form-group">
+          <div class="checkbox-group">
+            <input type="checkbox" id="is_admin" name="is_admin">
+            <label for="is_admin">Admin Access</label>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeAddUserModal()">
+          <i class="fas fa-times"></i> Cancel
+        </button>
+        <button type="submit" class="btn btn-primary">
+          <i class="fas fa-plus"></i> Add User
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block additional_scripts %}
+<script>
+  // Confirm delete
+  function confirmDelete(userId, username) {
+    if (confirm(`Are you sure you want to delete user "${username}" (ID: ${userId})? This action cannot be undone.`)) {
+      window.location.href = `{{ url_for('users') }}/delete/${userId}`;
+    }
+  }
+  
+  // Add User Modal
+  function openAddUserModal() {
+    document.getElementById('addUserModal').classList.add('show');
+  }
+  
+  function closeAddUserModal() {
+    document.getElementById('addUserModal').classList.remove('show');
+  }
+</script>
+{% endblock %} 

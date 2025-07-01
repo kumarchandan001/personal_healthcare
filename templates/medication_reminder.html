@@ -1,0 +1,832 @@
+{% extends "includes/layout.html" %}
+
+{% block title %}Medication Reminders{% endblock %}
+
+{% block additional_styles %}
+<style>
+  .medication-container {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 30px;
+    border-radius: 15px;
+    background-color: #fff;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+  }
+
+  .medication-header {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+
+  .medication-header h2 {
+    color: #2a9d8f;
+    font-size: 32px;
+    margin-bottom: 10px;
+  }
+
+  .medication-header p {
+    color: #6c757d;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .medication-content {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+  }
+
+  @media (min-width: 768px) {
+    .medication-content {
+      flex-direction: row;
+    }
+  }
+
+  .medication-list {
+    flex: 1.5;
+  }
+
+  .add-medication {
+    flex: 1;
+  }
+
+  .medication-form {
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .form-group {
+    margin-bottom: 10px;
+  }
+
+  .form-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 10px;
+  }
+
+  .form-group {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .form-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #495057;
+  }
+
+  .form-input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #ced4da;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: border-color 0.3s;
+  }
+
+  .form-input:focus {
+    border-color: #2a9d8f;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(42, 157, 143, 0.2);
+  }
+
+  .btn-submit {
+    background-color: #2a9d8f;
+    color: white;
+    border: none;
+    padding: 14px 25px;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+    margin-top: 15px;
+    align-self: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .btn-submit i {
+    margin-right: 8px;
+  }
+
+  .btn-submit:hover {
+    background-color: #238177;
+    transform: translateY(-2px);
+  }
+
+  .medication-card {
+    background-color: white;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    position: relative;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .medication-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  }
+
+  .medication-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: #4cc9f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .medication-icon i {
+    font-size: 24px;
+    color: white;
+  }
+
+  .medication-details {
+    flex-grow: 1;
+  }
+
+  .medication-name {
+    font-size: 18px;
+    font-weight: 600;
+    color: #343a40;
+    margin-bottom: 5px;
+  }
+
+  .medication-info {
+    color: #6c757d;
+    font-size: 14px;
+    margin-bottom: 10px;
+  }
+
+  .medication-schedule {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+
+  .schedule-pill {
+    background-color: #e9ecef;
+    color: #495057;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .schedule-pill i {
+    font-size: 12px;
+    margin-right: 5px;
+  }
+
+  .reminder-actions {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    gap: 8px;
+  }
+
+  .reminder-actions button {
+    background: none;
+    border: none;
+    padding: 5px;
+    cursor: pointer;
+    color: #6c757d;
+    border-radius: 4px;
+    transition: background-color 0.2s, color 0.2s;
+  }
+
+  .reminder-actions button:hover {
+    background-color: #e9ecef;
+    color: #343a40;
+  }
+
+  .btn-edit {
+    color: #4361ee !important;
+  }
+
+  .btn-delete {
+    color: #e63946 !important;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px 0;
+    color: #6c757d;
+  }
+
+  .empty-state i {
+    font-size: 50px;
+    margin-bottom: 15px;
+    color: #dee2e6;
+  }
+
+  .empty-state p {
+    font-size: 16px;
+    margin-bottom: 20px;
+  }
+
+  .success-message {
+    padding: 15px;
+    margin-top: 20px;
+    background-color: #d4edda;
+    color: #155724;
+    border-radius: 5px;
+    border: 1px solid #c3e6cb;
+    display: none;
+  }
+
+  .success-message.show {
+    display: block;
+    animation: fadeIn 0.5s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .next-reminder {
+    background-color: rgba(42, 157, 143, 0.1);
+    border-left: 4px solid #2a9d8f;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+  }
+
+  .next-reminder h3 {
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: #2a9d8f;
+  }
+
+  .next-reminder p {
+    margin-bottom: 5px;
+    font-size: 15px;
+    color: #495057;
+  }
+
+  .notification-settings {
+    margin-top: 15px;
+  }
+
+  .notification-toggle {
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .notification-toggle input {
+    display: none;
+  }
+
+  .toggle-slider {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+    background-color: #ccc;
+    border-radius: 24px;
+    margin-right: 10px;
+    transition: background-color 0.3s;
+  }
+
+  .toggle-slider:before {
+    content: "";
+    position: absolute;
+    height: 20px;
+    width: 20px;
+    left: 2px;
+    bottom: 2px;
+    background-color: white;
+    border-radius: 50%;
+    transition: transform 0.3s;
+  }
+
+  .notification-toggle input:checked + .toggle-slider {
+    background-color: #2a9d8f;
+  }
+
+  .notification-toggle input:checked + .toggle-slider:before {
+    transform: translateX(26px);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Medication Reminder Section -->
+<section class="medication-container">
+  <div class="medication-header">
+    <h2>Medication Reminders</h2>
+    <p>Keep track of your medications and never miss a dose with personalized reminders</p>
+  </div>
+  
+  <!-- Alarm audio element -->
+  <audio id="reminder-alarm" src="https://cdn.pixabay.com/audio/2022/07/26/audio_124bfae3c7.mp3" preload="auto"></audio>
+  
+  <div class="medication-content">
+    <div class="medication-list">
+      <div id="next-medication" class="next-reminder">
+        <h3>Your Next Medication</h3>
+        <div id="next-medication-content">
+          <!-- Next medication will be shown here -->
+          <p><i>No upcoming medications. Add your first medication to get started!</i></p>
+        </div>
+      </div>
+      
+      <h3>Your Medications</h3>
+      <div id="medications-container">
+        <!-- Medications will be populated here by JavaScript -->
+        <div class="empty-state">
+          <i class="fas fa-prescription-bottle-alt"></i>
+          <p>You don't have any medication reminders yet</p>
+          <p>Add your first medication using the form on the right</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="add-medication">
+      <h3>Add Medication</h3>
+      <form id="medicationForm" class="medication-form">
+        <div class="form-group">
+          <label for="medication-name" class="form-label">Medication Name</label>
+          <input type="text" id="medication-name" class="form-input" placeholder="e.g., Aspirin" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="medication-dosage" class="form-label">Dosage</label>
+          <input type="text" id="medication-dosage" class="form-input" placeholder="e.g., 500mg" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="medication-instructions" class="form-label">Instructions</label>
+          <input type="text" id="medication-instructions" class="form-input" placeholder="e.g., Take with food">
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="medication-time" class="form-label">Time</label>
+            <input type="time" id="medication-time" class="form-input" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="medication-frequency" class="form-label">Frequency</label>
+            <select id="medication-frequency" class="form-input">
+              <option value="daily">Daily</option>
+              <option value="twice-daily">Twice Daily</option>
+              <option value="weekly">Weekly</option>
+              <option value="monthly">Monthly</option>
+              <option value="as-needed">As Needed</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="medication-start" class="form-label">Start Date</label>
+          <input type="date" id="medication-start" class="form-input">
+        </div>
+        
+        <div class="form-group">
+          <label for="medication-end" class="form-label">End Date (Optional)</label>
+          <input type="date" id="medication-end" class="form-input">
+        </div>
+        
+        <div class="form-group">
+          <label for="medication-notes" class="form-label">Additional Notes</label>
+          <textarea id="medication-notes" class="form-input" rows="2" placeholder="Any additional information"></textarea>
+        </div>
+        
+        <button type="submit" class="btn-submit">
+          <i class="fas fa-plus"></i> Add Medication Reminder
+        </button>
+      </form>
+      
+      <div id="medication-success" class="success-message">
+        <h4>Medication Reminder Added!</h4>
+        <p>Your reminder has been successfully created.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+  {% endblock %}
+
+{% block additional_scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Elements
+    const medicationForm = document.getElementById('medicationForm');
+    const medicationsContainer = document.getElementById('medications-container');
+    const nextMedicationContent = document.getElementById('next-medication-content');
+    const successMessage = document.getElementById('medication-success');
+    
+    // Set today's date as default for start date
+    const today = new Date();
+    const formattedDate = today.toISOString().split('T')[0];
+    document.getElementById('medication-start').value = formattedDate;
+    
+    // Load medications from local storage
+    let medications = JSON.parse(localStorage.getItem('medications')) || [];
+    
+    // Display medications
+    function renderMedications() {
+      // Clear container
+      medicationsContainer.innerHTML = '';
+      
+      // Show empty state if no medications
+      if (medications.length === 0) {
+        medicationsContainer.innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-prescription-bottle-alt"></i>
+            <p>You don't have any medication reminders yet</p>
+            <p>Add your first medication using the form on the right</p>
+          </div>
+        `;
+        return;
+      }
+      
+      // Sort medications by time
+      medications.sort((a, b) => {
+        const timeA = new Date(`2000-01-01T${a.time}`);
+        const timeB = new Date(`2000-01-01T${b.time}`);
+        return timeA - timeB;
+      });
+      
+      // Create medication cards
+      medications.forEach((medication, index) => {
+        const medicationCard = createMedicationCard(medication, index);
+        medicationsContainer.appendChild(medicationCard);
+      });
+      
+      // Update next medication
+      updateNextMedication();
+    }
+    
+    // Create medication card element
+    function createMedicationCard(medication, index) {
+      const card = document.createElement('div');
+      card.className = 'medication-card';
+      
+      // Format time
+      const formattedTime = formatTime(medication.time);
+      
+      // Create frequency text
+      let frequencyText = '';
+      switch (medication.frequency) {
+        case 'daily':
+          frequencyText = 'Daily';
+          break;
+        case 'twice-daily':
+          frequencyText = 'Twice Daily';
+          break;
+        case 'weekly':
+          frequencyText = 'Weekly';
+          break;
+        case 'monthly':
+          frequencyText = 'Monthly';
+          break;
+        case 'as-needed':
+          frequencyText = 'As Needed';
+          break;
+      }
+      
+      // Construct card HTML
+      card.innerHTML = `
+        <div class="medication-icon">
+          <i class="fas fa-pills"></i>
+        </div>
+        <div class="medication-details">
+          <div class="medication-name">${medication.name}</div>
+          <div class="medication-info">${medication.dosage} ${medication.instructions ? '- ' + medication.instructions : ''}</div>
+          <div class="medication-schedule">
+            <span class="schedule-pill"><i class="far fa-clock"></i> ${formattedTime}</span>
+            <span class="schedule-pill"><i class="fas fa-sync-alt"></i> ${frequencyText}</span>
+            ${medication.startDate ? `<span class="schedule-pill"><i class="far fa-calendar-alt"></i> Started ${formatDate(medication.startDate)}</span>` : ''}
+            ${medication.endDate ? `<span class="schedule-pill"><i class="far fa-calendar-check"></i> Until ${formatDate(medication.endDate)}</span>` : ''}
+          </div>
+        </div>
+        <div class="reminder-actions">
+          <button class="btn-edit" title="Edit medication" onclick="editMedication(${index})"><i class="fas fa-pen"></i></button>
+          <button class="btn-delete" title="Delete medication" onclick="deleteMedication(${index})"><i class="fas fa-trash"></i></button>
+        </div>
+      `;
+      
+      return card;
+    }
+    
+    // Format time
+    function formatTime(timeString) {
+      const [hours, minutes] = timeString.split(':');
+      const hour = parseInt(hours);
+      const period = hour >= 12 ? 'PM' : 'AM';
+      const hour12 = hour % 12 || 12;
+      return `${hour12}:${minutes} ${period}`;
+    }
+    
+    // Format date
+    function formatDate(dateString) {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    }
+    
+    // Update next medication info
+    function updateNextMedication() {
+      if (medications.length === 0) {
+        nextMedicationContent.innerHTML = `<p><i>No upcoming medications. Add your first medication to get started!</i></p>`;
+        return;
+      }
+      
+      // Get current time
+      const now = new Date();
+      const currentHour = now.getHours();
+      const currentMinute = now.getMinutes();
+      
+      // Find next medication
+      let nextMed = null;
+      
+      // First check for medications later today
+      for (const med of medications) {
+        const [hours, minutes] = med.time.split(':').map(Number);
+        
+        if (hours > currentHour || (hours === currentHour && minutes > currentMinute)) {
+          nextMed = med;
+          break;
+        }
+      }
+      
+      // If no medications later today, take the first one for tomorrow
+      if (!nextMed && medications.length > 0) {
+        nextMed = medications[0];
+      }
+      
+      // Update UI
+      if (nextMed) {
+        const timeUntil = getTimeUntil(nextMed.time);
+        nextMedicationContent.innerHTML = `
+          <p><strong>${nextMed.name}</strong> - ${nextMed.dosage}</p>
+          <p><i class="far fa-clock"></i> ${formatTime(nextMed.time)} (${timeUntil})</p>
+          ${nextMed.instructions ? `<p><i class="fas fa-info-circle"></i> ${nextMed.instructions}</p>` : ''}
+        `;
+      }
+    }
+    
+    // Calculate time until next medication
+    function getTimeUntil(timeString) {
+      const now = new Date();
+      const [hours, minutes] = timeString.split(':').map(Number);
+      
+      const medicationTime = new Date(now);
+      medicationTime.setHours(hours, minutes, 0, 0);
+      
+      // If medication time is in the past, add 24 hours
+      if (medicationTime < now) {
+        medicationTime.setDate(medicationTime.getDate() + 1);
+      }
+      
+      // Calculate time difference
+      const diffMs = medicationTime - now;
+      const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+      const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+      
+      if (diffHours === 0) {
+        return `in ${diffMinutes} minutes`;
+      } else if (diffHours === 1 && diffMinutes === 0) {
+        return `in 1 hour`;
+      } else if (diffMinutes === 0) {
+        return `in ${diffHours} hours`;
+      } else {
+        return `in ${diffHours} hours, ${diffMinutes} minutes`;
+      }
+    }
+    
+    // Handle form submission
+    medicationForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      // Get form values
+      const name = document.getElementById('medication-name').value;
+      const dosage = document.getElementById('medication-dosage').value;
+      const instructions = document.getElementById('medication-instructions').value;
+      const time = document.getElementById('medication-time').value;
+      const frequency = document.getElementById('medication-frequency').value;
+      const startDate = document.getElementById('medication-start').value;
+      const endDate = document.getElementById('medication-end').value;
+      const notes = document.getElementById('medication-notes').value;
+      
+      // Create new medication object
+      const newMedication = {
+        name,
+        dosage,
+        instructions,
+        time,
+        frequency,
+        startDate,
+        endDate,
+        notes
+      };
+      
+      // Add to medications array
+      medications.push(newMedication);
+      
+      // Save to local storage
+      localStorage.setItem('medications', JSON.stringify(medications));
+      
+      // Re-render medications
+      renderMedications();
+      
+      // Reset form
+      medicationForm.reset();
+      document.getElementById('medication-start').value = formattedDate;
+      
+      // Show success message
+      successMessage.classList.add('show');
+      
+      // Hide success message after 3 seconds
+      setTimeout(() => {
+        successMessage.classList.remove('show');
+      }, 3000);
+    });
+    
+    // Edit medication - make this function globally accessible
+    window.editMedication = function(index) {
+      const medication = medications[index];
+      
+      // Fill form with medication data
+      document.getElementById('medication-name').value = medication.name;
+      document.getElementById('medication-dosage').value = medication.dosage;
+      document.getElementById('medication-instructions').value = medication.instructions || '';
+      document.getElementById('medication-time').value = medication.time;
+      document.getElementById('medication-frequency').value = medication.frequency;
+      document.getElementById('medication-start').value = medication.startDate || '';
+      document.getElementById('medication-end').value = medication.endDate || '';
+      document.getElementById('medication-notes').value = medication.notes || '';
+      
+      // Remove the medication
+      medications.splice(index, 1);
+      
+      // Save updated list
+      localStorage.setItem('medications', JSON.stringify(medications));
+      
+      // Re-render medications
+      renderMedications();
+      
+      // Scroll to form
+      document.querySelector('.add-medication').scrollIntoView({ behavior: 'smooth' });
+    };
+    
+    // Delete medication - make this function globally accessible
+    window.deleteMedication = function(index) {
+      // Confirm deletion
+      if (confirm('Are you sure you want to delete this medication reminder?')) {
+        // Remove the medication
+        medications.splice(index, 1);
+        
+        // Save updated list
+        localStorage.setItem('medications', JSON.stringify(medications));
+        
+        // Re-render medications
+        renderMedications();
+      }
+    };
+    
+    // Initial render
+    renderMedications();
+    
+    // Set up interval to update "time until" every minute
+    setInterval(updateNextMedication, 60000);
+
+    // Request notification permission
+    function requestNotificationPermission() {
+      if (!("Notification" in window)) {
+        console.log("This browser does not support notifications");
+        return;
+      }
+
+      Notification.requestPermission().then(function(permission) {
+        if (permission === "granted") {
+          console.log("Notification permission granted");
+        }
+      });
+    }
+
+    // Show notification
+    function showNotification(medication) {
+      if (Notification.permission !== "granted") {
+        requestNotificationPermission();
+        return;
+      }
+
+      // Play alarm sound
+      const alarm = document.getElementById('reminder-alarm');
+      let alarmPlayed = false;
+      if (alarm) {
+        alarm.currentTime = 0;
+        alarm.play().then(() => {
+          alarmPlayed = true;
+        }).catch(() => {
+          alarmPlayed = false;
+        });
+      }
+
+      // Show notification
+      const notification = new Notification("Medication Reminder", {
+        body: `Time to take ${medication.name} - ${medication.dosage}`,
+        icon: "/static/images/medication-icon.png",
+        tag: "medication-reminder",
+        requireInteraction: true
+      });
+
+      notification.onclick = function() {
+        window.focus();
+        this.close();
+      };
+
+      // Fallback: If alarm sound doesn't play, show alert/modal
+      setTimeout(function() {
+        if (!alarmPlayed) {
+          alert(`Time to take ${medication.name} - ${medication.dosage}`);
+        }
+      }, 500);
+    }
+
+    // Check for upcoming medications
+    function checkUpcomingMedications() {
+      const now = new Date();
+      const currentHour = now.getHours();
+      const currentMinute = now.getMinutes();
+
+      medications.forEach(medication => {
+        const [hours, minutes] = medication.time.split(':').map(Number);
+        
+        // Check if it's time for medication (within 1 minute)
+        if (hours === currentHour && Math.abs(minutes - currentMinute) <= 1) {
+          showNotification(medication);
+        }
+      });
+    }
+
+    // Initialize notifications
+    requestNotificationPermission();
+
+    // Check for medications every minute
+    setInterval(checkUpcomingMedications, 60000);
+
+    // Also check immediately when page loads
+    checkUpcomingMedications();
+
+    // Add notification toggle to settings
+    const notificationToggle = document.createElement('div');
+    notificationToggle.className = 'notification-settings';
+    notificationToggle.innerHTML = `
+      <label class="notification-toggle">
+        <input type="checkbox" id="enable-notifications" checked>
+        <span class="toggle-slider"></span>
+        Enable Notifications
+      </label>
+    `;
+    document.querySelector('.medication-header').appendChild(notificationToggle);
+
+    // Handle notification toggle
+    const enableNotifications = document.getElementById('enable-notifications');
+    enableNotifications.addEventListener('change', function() {
+      if (this.checked) {
+        requestNotificationPermission();
+      }
+    });
+
+    // Audio unlocker for alarm sound
+    document.addEventListener('click', function unlockAudio() {
+      const alarm = document.getElementById('reminder-alarm');
+      if (alarm) {
+        alarm.play().then(() => {
+          alarm.pause();
+          alarm.currentTime = 0;
+          document.removeEventListener('click', unlockAudio);
+        }).catch(() => {});
+      }
+    });
+  });
+</script>
+{% endblock %}

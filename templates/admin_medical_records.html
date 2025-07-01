@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin - Medical Records</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        header { background-color: #333; color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .header-title { font-size: 20px; font-weight: bold; }
+        nav { margin-top: 20px; background-color: white; padding: 10px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        nav ul { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; }
+        nav ul li { margin-right: 20px; margin-bottom: 5px; }
+        nav ul li a { text-decoration: none; color: #333; font-weight: bold; }
+        .card { background-color: white; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; overflow: hidden; }
+        .card-header { background-color: #4285f4; color: white; padding: 15px; font-weight: bold; }
+        .card-body { padding: 15px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #f2f2f2; }
+        tr:hover { background-color: #f5f5f5; }
+        .logout { color: white; text-decoration: none; }
+        .badge { display: inline-block; padding: 3px 8px; border-radius: 3px; font-size: 12px; }
+        .record-type { padding: 3px 8px; border-radius: 3px; font-size: 12px; font-weight: bold; background-color: #e0e0e0; }
+        .record-type.lab { background-color: #c6f6d5; color: #22543d; }
+        .record-type.prescription { background-color: #bee3f8; color: #2c5282; }
+        .record-type.imaging { background-color: #e9d8fd; color: #553c9a; }
+        .record-type.vaccination { background-color: #feebc8; color: #7b341e; }
+        .search-tools { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+        .search-tools input, .search-tools select { padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; flex: 1; min-width: 120px; }
+        .view-link { color: #4285f4; text-decoration: none; }
+        .view-link:hover { text-decoration: underline; }
+        .pagination { display: flex; justify-content: center; margin-top: 20px; }
+        .pagination a { padding: 8px 12px; margin: 0 5px; border-radius: 4px; background-color: #f8f9fa; text-decoration: none; color: #333; }
+        .pagination a.active { background-color: #4285f4; color: white; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-title">Health Assistant Admin</div>
+        <a href="{{ url_for('logout') }}" class="logout">Logout</a>
+    </header>
+    
+    <div class="container">
+        <nav>
+            <ul>
+                <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                <li><a href="{{ url_for('users') }}">Users</a></li>
+                <li><a href="{{ url_for('health_monitoring') }}">Health Monitoring</a></li>
+                <li><a href="{{ url_for('medical_records') }}">Medical Records</a></li>
+                <li><a href="{{ url_for('activity_tracking') }}">Activity Tracking</a></li>
+                <li><a href="{{ url_for('bmi_history') }}">BMI History</a></li>
+                <li><a href="{{ url_for('medical_prescriptions') }}">Medical Prescriptions</a></li>
+            </ul>
+        </nav>
+        
+        <h1>Medical Records</h1>
+        
+        <div class="search-tools">
+            <input type="text" id="search-name" placeholder="Search by name...">
+            <select id="filter-type">
+                <option value="all">All Types</option>
+                <option value="lab">Lab Reports</option>
+                <option value="prescription">Prescriptions</option>
+                <option value="imaging">Imaging</option>
+                <option value="vaccination">Vaccination</option>
+                <option value="other">Other</option>
+            </select>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">All Medical Records</div>
+            <div class="card-body">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>User</th>
+                            <th>Record Name</th>
+                            <th>Type</th>
+                            <th>Date</th>
+                            <th>Uploaded At</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="records-table">
+                        {% if records %}
+                            {% for record in records %}
+                            <tr data-record-type="{{ record.record_type }}">
+                                <td>{{ record.id }}</td>
+                                <td><a href="{{ url_for('user_history', user_id=record.user_id) }}" class="view-link">{{ record.username }}</a></td>
+                                <td>{{ record.record_name }}</td>
+                                <td><span class="record-type {{ record.record_type }}">{{ record.record_type|replace('_', ' ')|title }}</span></td>
+                                <td>{{ record.record_date }}</td>
+                                <td>{{ record.uploaded_at }}</td>
+                                <td>
+                                    <a href="{{ url_for('user_history', user_id=record.user_id) }}" class="view-link">View User</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="7" style="text-align: center; padding: 30px; color: #666;">
+                                    No medical records found
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        {% if records and records|length > 20 %}
+            <div class="pagination">
+                <a href="#" class="active">1</a>
+                <a href="#">2</a>
+                <a href="#">3</a>
+                <a href="#">Next »</a>
+            </div>
+        {% endif %}
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('search-name');
+            const typeFilter = document.getElementById('filter-type');
+            const recordsTable = document.getElementById('records-table');
+            const rows = recordsTable.querySelectorAll('tr');
+            
+            function filterRecords() {
+                const searchTerm = searchInput.value.toLowerCase();
+                const filterType = typeFilter.value;
+                
+                rows.forEach(row => {
+                    const recordName = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
+                    const recordType = row.getAttribute('data-record-type');
+                    
+                    const nameMatch = recordName.includes(searchTerm);
+                    const typeMatch = filterType === 'all' || recordType === filterType;
+                    
+                    row.style.display = nameMatch && typeMatch ? '' : 'none';
+                });
+            }
+            
+            searchInput.addEventListener('input', filterRecords);
+            typeFilter.addEventListener('change', filterRecords);
+        });
+    </script>
+</body>
+</html> 

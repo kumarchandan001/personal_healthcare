@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit User - Admin Dashboard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+  <style>
+    :root {
+      --admin-primary: #2c3e50;
+      --admin-secondary: #e74c3c;
+      --admin-accent: #3498db;
+      --admin-success: #2ecc71;
+      --admin-warning: #f39c12;
+      --admin-danger: #e74c3c;
+      --admin-info: #3498db;
+      --text-dark: #2c3e50;
+      --text-muted: #7f8c8d;
+      --text-light: #ecf0f1;
+      --bg-dark: #2c3e50;
+      --bg-light: #ecf0f1;
+      --bg-card: #ffffff;
+      --border-color: #ddd;
+    }
+    
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f5f7fa;
+      color: var(--text-dark);
+    }
+    
+    .admin-container {
+      display: flex;
+      min-height: 100vh;
+    }
+    
+    /* Sidebar */
+    .admin-sidebar {
+      width: 250px;
+      background-color: var(--bg-dark);
+      color: var(--text-light);
+      position: fixed;
+      height: 100vh;
+      overflow-y: auto;
+      transition: all 0.3s;
+      z-index: 1000;
+      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    .admin-sidebar-header {
+      padding: 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      text-align: center;
+    }
+    
+    .admin-sidebar-header h2 {
+      margin: 0;
+      font-size: 1.5rem;
+      color: var(--admin-secondary);
+      font-weight: 700;
+    }
+    
+    .admin-badge {
+      background-color: var(--admin-secondary);
+      color: white;
+      padding: 3px 8px;
+      border-radius: 20px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      display: inline-block;
+      margin-top: 5px;
+    }
+    
+    .admin-nav {
+      padding: 20px 0;
+    }
+    
+    .admin-nav-item {
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      color: var(--text-light);
+      text-decoration: none;
+      transition: all 0.3s;
+      margin-bottom: 5px;
+    }
+    
+    .admin-nav-item:hover, .admin-nav-item.active {
+      background-color: rgba(255, 255, 255, 0.1);
+      border-left: 4px solid var(--admin-secondary);
+    }
+    
+    .admin-nav-item i {
+      margin-right: 10px;
+      font-size: 1.1rem;
+      width: 20px;
+      text-align: center;
+    }
+    
+    /* Main content */
+    .admin-content {
+      flex: 1;
+      margin-left: 250px;
+      padding: 25px;
+      transition: all 0.3s;
+    }
+    
+    .admin-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .admin-header h1 {
+      margin: 0;
+      color: var(--text-dark);
+      font-weight: 700;
+      font-size: 1.8rem;
+    }
+    
+    .admin-user-menu {
+      display: flex;
+      align-items: center;
+    }
+    
+    .admin-user-menu .user-name {
+      margin-right: 15px;
+      font-weight: 600;
+      color: var(--text-dark);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    
+    .logout-btn {
+      background-color: var(--admin-secondary);
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      text-decoration: none;
+    }
+    
+    .logout-btn:hover {
+      background-color: var(--admin-danger);
+      transform: translateY(-2px);
+    }
+    
+    /* Edit User Form */
+    .edit-form-container {
+      background-color: var(--bg-card);
+      border-radius: 8px;
+      padding: 30px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    .form-row {
+      margin-bottom: 25px;
+    }
+    
+    .form-row label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: var(--text-dark);
+      font-size: 1rem;
+    }
+    
+    .form-control {
+      width: 100%;
+      padding: 12px 15px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 1rem;
+      transition: all 0.3s;
+    }
+    
+    .form-control:focus {
+      border-color: var(--admin-accent);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+    }
+    
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .checkbox-group input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+    }
+    
+    .form-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 30px;
+    }
+    
+    .btn {
+      padding: 12px 20px;
+      border-radius: 4px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .btn-back {
+      background-color: #6c757d;
+      color: white;
+      border: none;
+      text-decoration: none;
+    }
+    
+    .btn-back:hover {
+      background-color: #5a6268;
+      transform: translateY(-2px);
+    }
+    
+    .btn-save {
+      background-color: var(--admin-success);
+      color: white;
+      border: none;
+    }
+    
+    .btn-save:hover {
+      background-color: #27ae60;
+      transform: translateY(-2px);
+      box-shadow: 0 2px 5px rgba(46, 204, 113, 0.2);
+    }
+    
+    .help-text {
+      margin-top: 6px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    
+    .danger-zone {
+      margin-top: 50px;
+      border-top: 1px solid var(--border-color);
+      padding-top: 30px;
+    }
+    
+    .danger-zone h3 {
+      color: var(--admin-danger);
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 1.2rem;
+    }
+    
+    .danger-zone p {
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+    
+    .btn-danger {
+      background-color: var(--admin-danger);
+      color: white;
+      border: none;
+    }
+    
+    .btn-danger:hover {
+      background-color: #c0392b;
+      transform: translateY(-2px);
+      box-shadow: 0 2px 5px rgba(231, 76, 60, 0.2);
+    }
+    
+    .flash-message {
+      padding: 15px;
+      border-radius: 6px;
+      margin-bottom: 25px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .flash-message.error {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+    
+    .flash-message.success {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+      .admin-sidebar {
+        width: 70px;
+        transform: translateX(0);
+      }
+      
+      .admin-sidebar.expanded {
+        width: 250px;
+      }
+      
+      .admin-content {
+        margin-left: 70px;
+      }
+      
+      .admin-sidebar-header h2 {
+        display: none;
+      }
+      
+      .admin-sidebar.expanded .admin-sidebar-header h2 {
+        display: block;
+      }
+      
+      .admin-nav-item span {
+        display: none;
+      }
+      
+      .admin-sidebar.expanded .admin-nav-item span {
+        display: inline;
+      }
+      
+      .form-actions {
+        flex-direction: column;
+        gap: 15px;
+      }
+      
+      .form-actions .btn {
+        width: 100%;
+        text-align: center;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-container">
+    <!-- Sidebar -->
+    <div class="admin-sidebar">
+      <div class="admin-sidebar-header">
+        <h2>Health Assistant</h2>
+        <span class="admin-badge">Admin Panel</span>
+      </div>
+      
+      <nav class="admin-nav">
+        <a href="{{ url_for('admin_dashboard') }}" class="admin-nav-item">
+          <i class="fas fa-tachometer-alt"></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="{{ url_for('admin_users') }}" class="admin-nav-item active">
+          <i class="fas fa-users"></i>
+          <span>User Management</span>
+        </a>
+        <a href="{{ url_for('admin_health_data') }}" class="admin-nav-item">
+          <i class="fas fa-heartbeat"></i>
+          <span>Health Data</span>
+        </a>
+        <a href="{{ url_for('admin_medication_data') }}" class="admin-nav-item">
+          <i class="fas fa-pills"></i>
+          <span>Medication Data</span>
+        </a>
+        <a href="{{ url_for('admin_predictions') }}" class="admin-nav-item">
+          <i class="fas fa-stethoscope"></i>
+          <span>Disease Predictions</span>
+        </a>
+        <a href="{{ url_for('admin_settings') }}" class="admin-nav-item">
+          <i class="fas fa-cog"></i>
+          <span>Settings</span>
+        </a>
+        <a href="{{ url_for('home') }}" class="admin-nav-item">
+          <i class="fas fa-home"></i>
+          <span>Main Site</span>
+        </a>
+        <a href="{{ url_for('admin_logout') }}" class="admin-nav-item">
+          <i class="fas fa-sign-out-alt"></i>
+          <span>Logout</span>
+        </a>
+      </nav>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="admin-content">
+      <header class="admin-header">
+        <h1>Edit User</h1>
+        <div class="admin-user-menu">
+          <span class="user-name">
+            <i class="fas fa-user-shield"></i>
+            {{ admin_user.username }}
+          </span>
+          <a href="{{ url_for('admin_logout') }}" class="logout-btn">
+            <i class="fas fa-sign-out-alt"></i>
+            Logout
+          </a>
+        </div>
+      </header>
+      
+      <!-- Flash Messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+          <div class="flash-message {{ category }}">
+            <i class="fas {% if category == 'error' %}fa-exclamation-circle{% else %}fa-check-circle{% endif %}"></i>
+            {{ message }}
+          </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+      
+      <!-- Edit User Form -->
+      <div class="edit-form-container">
+        <form action="{{ url_for('admin_edit_user', user_id=user.id) }}" method="POST">
+          <div class="form-row">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" class="form-control" value="{{ user.username }}" required>
+          </div>
+          
+          <div class="form-row">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" class="form-control" value="{{ user.email }}" required>
+          </div>
+          
+          <div class="form-row">
+            <label for="new_password">New Password</label>
+            <input type="password" id="new_password" name="new_password" class="form-control">
+            <div class="help-text">Leave blank to keep the current password.</div>
+          </div>
+          
+          <div class="form-row">
+            <div class="checkbox-group">
+              <input type="checkbox" id="is_admin" name="is_admin" {% if user.is_admin %}checked{% endif %}>
+              <label for="is_admin">Administrator Access</label>
+            </div>
+            <div class="help-text">Admins have access to the admin panel and all user data.</div>
+          </div>
+          
+          <div class="form-actions">
+            <a href="{{ url_for('admin_users') }}" class="btn btn-back">
+              <i class="fas fa-arrow-left"></i> Back to Users
+            </a>
+            
+            <button type="submit" class="btn btn-save">
+              <i class="fas fa-save"></i> Save Changes
+            </button>
+          </div>
+          
+          <!-- Danger Zone -->
+          <div class="danger-zone">
+            <h3><i class="fas fa-exclamation-triangle"></i> Danger Zone</h3>
+            <p>Deleting a user account cannot be undone. All associated data will be permanently deleted.</p>
+            <button type="button" class="btn btn-danger" onclick="confirmDelete('{{ user.id }}', '{{ user.username }}')">
+              <i class="fas fa-trash"></i> Delete User
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // Confirm delete
+    function confirmDelete(userId, username) {
+      if (confirm(`Are you sure you want to delete user "${username}" (ID: ${userId})? This action cannot be undone.`)) {
+        window.location.href = `/admin/users/delete/${userId}`;
+      }
+    }
+    
+    // Toggle sidebar on mobile
+    document.addEventListener('DOMContentLoaded', function() {
+      const sidebar = document.querySelector('.admin-sidebar');
+      
+      // Add a toggle button for mobile
+      const adminHeader = document.querySelector('.admin-header');
+      const toggleBtn = document.createElement('button');
+      toggleBtn.innerHTML = '<i class="fas fa-bars"></i>';
+      toggleBtn.className = 'sidebar-toggle';
+      toggleBtn.style.display = 'none';
+      adminHeader.prepend(toggleBtn);
+      
+      // Style the toggle button
+      toggleBtn.style.background = 'transparent';
+      toggleBtn.style.border = 'none';
+      toggleBtn.style.fontSize = '1.5rem';
+      toggleBtn.style.cursor = 'pointer';
+      toggleBtn.style.color = 'var(--text-dark)';
+      
+      // Check window width and show/hide toggle button
+      function checkWidth() {
+        if (window.innerWidth <= 768) {
+          toggleBtn.style.display = 'block';
+        } else {
+          toggleBtn.style.display = 'none';
+          sidebar.classList.remove('expanded');
+        }
+      }
+      
+      // Toggle sidebar on button click
+      toggleBtn.addEventListener('click', function() {
+        sidebar.classList.toggle('expanded');
+      });
+      
+      // Call on load and resize
+      checkWidth();
+      window.addEventListener('resize', checkWidth);
+    });
+  </script>
+</body>
+</html> 

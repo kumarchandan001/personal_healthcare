@@ -1,0 +1,809 @@
+{% extends "includes/layout.html" %}
+
+{% block title %}Health Tips{% endblock %}
+
+{% block additional_styles %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  :root {
+    --primary-color: #2a9d8f; /* Teal */
+    --secondary-color: #264653; /* Dark teal/blue */
+    --accent-color: #e9c46a; /* Warm yellow */
+    --success-color: #57cc99; /* Fresh green */
+    --warning-color: #e76f51; /* Soft red-orange */
+    --text-dark: #2b2d42; /* Better readability than pure black */
+    --text-medium: #495057; /* Medium contrast text */
+    --text-light: #6c757d; /* Light text */
+    --background-light: #f8f9fa;
+    --background-card: #ffffff;
+    --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --hover-shadow: 0 10px 15px rgba(0, 0, 0, 0.15);
+  }
+
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f5f7fa;
+    color: var(--text-dark);
+  }
+
+  #tips-section {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 20px;
+  }
+
+  .section-header {
+    text-align: center;
+    margin-bottom: 40px;
+    position: relative;
+  }
+
+  .section-header h1 {
+    font-size: 2rem;
+    color: var(--secondary-color);
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 3px solid var(--accent-color);
+    padding-bottom: 10px;
+    font-weight: 700;
+    position: relative;
+    display: inline-block;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .section-header h1::after {
+    content: '';
+    position: absolute;
+    width: 50%;
+    height: 3px;
+    background-color: var(--primary-color);
+    bottom: -3px;
+    left: 25%;
+  }
+
+  .section-header p {
+    font-size: 1.1rem;
+    color: var(--text-medium);
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  .categories-container {
+    display: flex;
+    justify-content: center;
+    margin: 30px 0;
+    flex-wrap: wrap;
+    gap: 15px;
+  }
+
+  .category-btn {
+    background-color: var(--background-card);
+    border: 2px solid var(--primary-color);
+    color: var(--primary-color);
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .category-btn:hover {
+    background-color: var(--primary-color);
+    color: white;
+    transform: translateY(-3px);
+  }
+
+  .category-btn.active {
+    background-color: var(--primary-color);
+    color: white;
+    box-shadow: 0 4px 8px rgba(42, 157, 143, 0.3);
+  }
+
+  .tips-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 25px;
+    margin-top: 30px;
+  }
+
+  .tip-card {
+    background-color: var(--background-card);
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: var(--card-shadow);
+    transition: all 0.3s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid rgba(0,0,0,0.05);
+  }
+
+  .tip-card:hover {
+    transform: translateY(-10px);
+    box-shadow: var(--hover-shadow);
+  }
+
+  .tip-header {
+    padding: 0;
+    position: relative;
+    height: 180px;
+    background-color: #e9ecef;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .tip-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    transition: all 0.3s ease;
+  }
+
+  .tip-image:hover {
+    transform: scale(1.05);
+  }
+
+  .img-fallback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #e9ecef;
+    color: var(--primary-color);
+    height: 100%;
+    width: 100%;
+    font-size: 4rem;
+  }
+  
+  .img-fallback i {
+    opacity: 0.7;
+  }
+
+  .tip-category {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background-color: var(--primary-color);
+    color: white;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    z-index: 1;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  }
+
+  .tip-content {
+    padding: 20px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--background-card);
+  }
+
+  .tip-title {
+    font-size: 1.2rem;
+    color: var(--text-dark);
+    margin-bottom: 10px;
+    font-weight: 700;
+    line-height: 1.4;
+  }
+
+  .tip-description {
+    color: var(--text-medium);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    flex-grow: 1;
+  }
+
+  .tip-footer {
+    padding: 15px 20px;
+    border-top: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--background-card);
+  }
+
+  .tip-author {
+    display: flex;
+    align-items: center;
+  }
+
+  .author-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    margin-right: 10px;
+    object-fit: cover;
+    border: 1px solid #eee;
+    background-color: #e9ecef;
+  }
+
+  .author-fallback {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    margin-right: 10px;
+    font-size: 1rem;
+    background-color: var(--primary-color);
+    color: white;
+    border: 1px solid #eee;
+    position: relative;
+    display: inline-flex;
+  }
+  
+  .author-fallback i {
+    font-size: 0.9rem;
+    opacity: 1;
+  }
+
+  .author-name {
+    font-size: 0.9rem;
+    color: var(--text-medium);
+    font-weight: 500;
+  }
+
+  .tip-actions {
+    display: flex;
+    gap: 15px;
+  }
+
+  .action-btn {
+    color: var(--text-light);
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    font-size: 0.9rem;
+  }
+
+  .action-btn i {
+    margin-right: 5px;
+  }
+
+  .action-btn:hover {
+    color: var(--primary-color);
+  }
+
+  .like-btn.active {
+    color: var(--warning-color);
+  }
+
+  .bookmark-btn.active {
+    color: var(--primary-color);
+  }
+
+  .share-btn.active {
+    color: var(--success-color);
+  }
+
+  .daily-tip-section {
+    background-color: var(--secondary-color);
+    color: white;
+    padding: 30px;
+    border-radius: 15px;
+    margin-bottom: 40px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--card-shadow);
+  }
+
+  .daily-tip-heading {
+    font-size: 1.8rem;
+    margin-bottom: 15px;
+    position: relative;
+    z-index: 1;
+    font-weight: 700;
+    color: white;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  }
+
+  .daily-tip-content {
+    font-size: 1.2rem;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 1;
+    color: rgba(255,255,255,0.95);
+  }
+
+  .daily-tip-actions {
+    display: flex;
+    gap: 15px;
+    position: relative;
+    z-index: 1;
+    flex-wrap: wrap;
+  }
+
+  .daily-tip-btn {
+    background-color: var(--accent-color);
+    color: var(--secondary-color);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+
+  .daily-tip-btn i {
+    margin-right: 8px;
+  }
+
+  .daily-tip-btn:hover {
+    background-color: #f4d58d;
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  }
+
+  .daily-tip-bg {
+    position: absolute;
+    right: -20px;
+    bottom: -20px;
+    opacity: 0.1;
+    transform: rotate(-15deg);
+    z-index: 0;
+    font-size: 150px;
+    line-height: 1;
+    color: white;
+  }
+
+  .search-container {
+    display: flex;
+    max-width: 600px;
+    margin: 0 auto 30px;
+  }
+
+  .search-input {
+    flex-grow: 1;
+    padding: 12px 20px;
+    border: 1px solid #ddd;
+    border-radius: 30px 0 0 30px;
+    font-size: 1rem;
+    outline: none;
+    transition: all 0.3s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  }
+
+  .search-input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(42, 157, 143, 0.2);
+  }
+
+  .search-btn {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 0 30px 30px 0;
+    padding: 0 25px;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+
+  .search-btn:hover {
+    background-color: var(--secondary-color);
+  }
+
+  .search-btn i {
+    font-size: 1.2rem;
+  }
+
+  /* Emergency fix for proper rendering */
+  img[src=""], img[src="undefined"], img[src="null"] {
+    display: none;
+  }
+  
+  img:not([src]) {
+    display: none;
+  }
+  
+  .tip-image.broken {
+    display: none;
+  }
+  
+  /* Pagination styling */
+  .pagination-container {
+    display: flex;
+    justify-content: center;
+    margin: 40px 0 20px;
+  }
+  
+  .pagination {
+    display: flex;
+    gap: 10px;
+  }
+  
+  .page-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: white;
+    border: 1px solid #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 14px;
+  }
+  
+  .page-btn.active {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+  }
+  
+  .page-btn:hover:not(.active) {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+  }
+  
+  /* Newsletter section */
+  .newsletter-section {
+    background-color: var(--background-card);
+    border-radius: 15px;
+    padding: 30px;
+    margin-top: 40px;
+    text-align: center;
+    box-shadow: var(--card-shadow);
+  }
+  
+  .newsletter-heading {
+    color: var(--primary-color);
+    font-size: 1.6rem;
+    margin-bottom: 15px;
+  }
+  
+  .newsletter-description {
+    color: var(--text-medium);
+    max-width: 600px;
+    margin: 0 auto 20px;
+  }
+  
+  .newsletter-form {
+    display: flex;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+  
+  .newsletter-input {
+    flex-grow: 1;
+    padding: 12px 20px;
+    border: 1px solid #ddd;
+    border-radius: 30px 0 0 30px;
+    font-size: 1rem;
+    outline: none;
+  }
+  
+  .newsletter-btn {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 0 25px;
+    border-radius: 0 30px 30px 0;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  
+  .newsletter-btn:hover {
+    background-color: var(--secondary-color);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<section id="tips-section">
+  <div class="section-header">
+    <h1 class="personalized-heading">Health Tips & Wellness Resources</h1>
+    <p>Explore our collection of expert health tips, wellness advice, and resources to help you achieve and maintain optimal health.</p>
+  </div>
+
+  <div class="search-container">
+    <input type="text" class="search-input" placeholder="Search for health tips..." id="searchTips">
+    <button class="search-btn"><i class="fas fa-search"></i></button>
+  </div>
+
+  <!-- Tip of the Day -->
+  <div class="daily-tip-section">
+    <h2 class="daily-tip-heading">Tip of the Day</h2>
+    <p class="daily-tip-content" id="tipOfDay">Stay hydrated by drinking at least 8 glasses of water daily. Proper hydration improves energy levels, brain function, and helps maintain overall health.</p>
+    <div class="daily-tip-actions">
+      <button class="daily-tip-btn" id="newTipBtn"><i class="fas fa-sync-alt"></i> New Tip</button>
+      <button class="daily-tip-btn" id="saveTipBtn"><i class="far fa-bookmark"></i> Save</button>
+      <button class="daily-tip-btn" id="shareTipBtn"><i class="fas fa-share-alt"></i> Share</button>
+    </div>
+    <div class="daily-tip-bg">
+      <i class="fas fa-lightbulb"></i>
+    </div>
+  </div>
+
+  <div class="categories-container">
+    <button class="category-btn active" data-category="all">All Categories</button>
+    <button class="category-btn" data-category="nutrition"><i class="fas fa-apple-alt"></i> Nutrition</button>
+    <button class="category-btn" data-category="fitness"><i class="fas fa-running"></i> Fitness</button>
+    <button class="category-btn" data-category="mental-health"><i class="fas fa-brain"></i> Mental Health</button>
+    <button class="category-btn" data-category="sleep"><i class="fas fa-moon"></i> Sleep</button>
+  </div>
+
+  <div class="tips-grid">
+    <!-- Tips will be loaded here via JavaScript -->
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination-container">
+    <div id="pagination" class="pagination">
+      <!-- Pagination buttons will be added here -->
+    </div>
+  </div>
+
+  <!-- Newsletter Section -->
+  <div class="newsletter-section">
+    <h3 class="newsletter-heading">Get Weekly Health Tips</h3>
+    <p class="newsletter-description">Subscribe to our newsletter and receive personalized health tips, latest research findings, and wellness advice straight to your inbox.</p>
+    <form class="newsletter-form">
+      <input type="email" class="newsletter-input" placeholder="Your email address" required>
+      <button type="submit" class="newsletter-btn">Subscribe</button>
+    </form>
+  </div>
+</section>
+
+
+
+  {% endblock %}
+
+{% block additional_scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Health tips data
+    const healthTips = [
+      {
+        id: 1,
+        category: "nutrition",
+        title: "Colorful Plate Rule",
+        description: "Aim to eat a variety of colorful fruits and vegetables each day. Different colors indicate different nutrients, so a rainbow on your plate ensures a diverse nutrient intake for optimal health.",
+        image: "/static/images/tips/nutrition1.jpg",
+        author: "Dr. Sarah Johnson",
+        authorImg: "/static/images/tips/author1.jpg",
+        likes: 125,
+        iconClass: "fas fa-apple-alt" // Fallback icon for nutrition
+      },
+      {
+        id: 2,
+        category: "fitness",
+        title: "Quick Morning Stretches",
+        description: "Just 5 minutes of morning stretching can improve blood circulation, boost energy levels, and reduce muscle stiffness. Focus on major muscle groups and hold each stretch for 15-30 seconds.",
+        image: "/static/images/tips/fitness1.jpg",
+        author: "Mike Peterson",
+        authorImg: "/static/images/tips/author2.jpg",
+        likes: 87,
+        iconClass: "fas fa-running" // Fallback icon for fitness
+      },
+      {
+        id: 3,
+        category: "mental-health",
+        title: "5-Minute Mindfulness",
+        description: "Practice the 5-5-5 breathing technique: inhale for 5 seconds, hold for 5 seconds, and exhale for 5 seconds. Repeat this for just 5 minutes daily to reduce stress and anxiety.",
+        image: "/static/images/tips/mental1.jpg",
+        author: "Dr. Emma Roberts",
+        authorImg: "/static/images/tips/author3.jpg",
+        likes: 154,
+        iconClass: "fas fa-brain" // Fallback icon for mental health
+      },
+      {
+        id: 4,
+        category: "sleep",
+        title: "Digital Sunset Routine",
+        description: "Create a \"digital sunset\" by turning off all screens 1-2 hours before bedtime. Blue light from devices suppresses melatonin production, making it harder to fall asleep naturally.",
+        image: "/static/images/tips/sleep1.jpg",
+        author: "Dr. James Chen",
+        authorImg: "/static/images/tips/author4.jpg",
+        likes: 98,
+        iconClass: "fas fa-moon" // Fallback icon for sleep
+      },
+      {
+        id: 5,
+        category: "nutrition",
+        title: "Protein-Rich Breakfast",
+        description: "Start your day with a protein-rich breakfast to stabilize blood sugar levels and reduce cravings throughout the day. Aim for 20-30g of protein from sources like eggs, Greek yogurt, or plant-based alternatives.",
+        image: "/static/images/tips/nutrition2.jpg",
+        author: "Nina Williams",
+        authorImg: "/static/images/tips/author5.jpg",
+        likes: 112,
+        iconClass: "fas fa-apple-alt"
+      },
+      {
+        id: 6,
+        category: "fitness",
+        title: "10,000 Steps Alternative",
+        description: "Can't reach 10,000 steps? Try three 10-minute brisk walks throughout the day instead. This approach is equally effective for cardiovascular health and easier to fit into a busy schedule.",
+        image: "/static/images/tips/fitness2.jpg",
+        author: "Robert Kumar",
+        authorImg: "/static/images/tips/author6.jpg",
+        likes: 76,
+        iconClass: "fas fa-running"
+      },
+      {
+        id: 7,
+        category: "mental-health",
+        title: "Gratitude Journal",
+        description: "Write down three things you're grateful for each day. This simple practice can significantly improve mood, reduce symptoms of depression, and enhance overall mental well-being.",
+        image: "/static/images/tips/mental2.jpg",
+        author: "Dr. Lisa Thompson",
+        authorImg: "/static/images/tips/author7.jpg",
+        likes: 132,
+        iconClass: "fas fa-brain"
+      },
+      {
+        id: 8,
+        category: "sleep",
+        title: "Temperature for Better Sleep",
+        description: "Set your bedroom temperature between 65-68°F (18-20°C) for optimal sleep. The body naturally cools down when preparing for sleep, and a cooler room can help facilitate this process.",
+        image: "/static/images/tips/sleep2.jpg",
+        author: "Dr. Mark Wilson",
+        authorImg: "/static/images/tips/author8.jpg",
+        likes: 105,
+        iconClass: "fas fa-moon"
+      },
+      {
+        id: 9,
+        category: "nutrition",
+        title: "Healthy Snack Prep",
+        description: "Prepare healthy snacks in advance to avoid reaching for processed alternatives when hunger strikes. Cut vegetables, portion nuts, and prepare hummus at the beginning of the week.",
+        image: "/static/images/tips/nutrition3.jpg",
+        author: "Amy Rodriguez",
+        authorImg: "/static/images/tips/author9.jpg",
+        likes: 90,
+        iconClass: "fas fa-apple-alt"
+      },
+      {
+        id: 10,
+        category: "fitness",
+        title: "Strength Training Benefits",
+        description: "Include at least two days of strength training weekly. Building muscle helps maintain bone density, boosts metabolism, and improves functional fitness for daily activities.",
+        image: "/static/images/tips/fitness3.jpg",
+        author: "Jason Miller",
+        authorImg: "/static/images/tips/author10.jpg",
+        likes: 118,
+        iconClass: "fas fa-running"
+      }
+    ];
+
+    // DOM elements
+    const tipsGrid = document.querySelector('.tips-grid');
+    const categoryButtons = document.querySelectorAll('.category-btn');
+    const paginationContainer = document.getElementById('pagination');
+    
+    // Variables for pagination
+    let currentPage = 1;
+    const tipsPerPage = 6;
+    let currentCategory = 'all';
+    
+    // Function to display tips based on category and page
+    function displayTips(category, page) {
+      // Clear existing tips
+      tipsGrid.innerHTML = '';
+      
+      // Filter tips by category
+      let filteredTips = category === 'all' 
+        ? healthTips 
+        : healthTips.filter(tip => tip.category === category);
+      
+      // Calculate pagination
+      const startIndex = (page - 1) * tipsPerPage;
+      const endIndex = startIndex + tipsPerPage;
+      const paginatedTips = filteredTips.slice(startIndex, endIndex);
+      
+      // Create tip cards and add to grid
+      paginatedTips.forEach(tip => {
+        const tipCard = document.createElement('div');
+        tipCard.className = 'tip-card';
+        tipCard.dataset.category = tip.category;
+        
+        tipCard.innerHTML = `
+          <div class="tip-header">
+            <img src="${tip.image}" 
+                 onerror="this.onerror=null; this.style.display='none'; this.parentElement.querySelector('.img-fallback').style.display='flex';" 
+                 alt="${tip.title}" 
+                 class="tip-image">
+            <div class="img-fallback" style="display:none;">
+              <i class="${tip.iconClass}"></i>
+            </div>
+            <span class="tip-category">${tip.category.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
+          </div>
+          <div class="tip-content">
+            <h3 class="tip-title">${tip.title}</h3>
+            <p class="tip-description">${tip.description}</p>
+          </div>
+          <div class="tip-footer">
+            <div class="tip-author">
+              <img src="${tip.authorImg}" 
+                   onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';" 
+                   alt="${tip.author}" 
+                   class="author-avatar">
+              <div class="img-fallback author-fallback" style="display:none;">
+                <i class="fas fa-user"></i>
+              </div>
+              <span class="author-name">${tip.author}</span>
+            </div>
+            <div class="tip-actions">
+              <button class="action-btn like-btn"><i class="far fa-heart"></i> ${tip.likes}</button>
+              <button class="action-btn bookmark-btn"><i class="far fa-bookmark"></i></button>
+            </div>
+          </div>
+        `;
+        
+        tipsGrid.appendChild(tipCard);
+      });
+      
+      // Update pagination
+      updatePagination(filteredTips.length, page);
+    }
+    
+    // Function to update pagination buttons
+    function updatePagination(totalItems, currentPage) {
+      const totalPages = Math.ceil(totalItems / tipsPerPage);
+      paginationContainer.innerHTML = '';
+      
+      // Create pagination buttons
+      for (let i = 1; i <= totalPages; i++) {
+        // For large page sets, add ellipsis
+        if (totalPages > 7) {
+          if (i === 1 || i === totalPages || 
+              (i >= currentPage - 1 && i <= currentPage + 1)) {
+            addPageButton(i);
+          } else if (i === currentPage - 2 || i === currentPage + 2) {
+            const ellipsis = document.createElement('span');
+            ellipsis.className = 'page-ellipsis';
+            ellipsis.innerHTML = '...';
+            paginationContainer.appendChild(ellipsis);
+          }
+        } else {
+          addPageButton(i);
+        }
+      }
+      
+      function addPageButton(pageNum) {
+        const pageButton = document.createElement('button');
+        pageButton.className = 'page-btn' + (pageNum === currentPage ? ' active' : '');
+        pageButton.textContent = pageNum;
+        pageButton.addEventListener('click', () => {
+          currentPage = pageNum;
+          displayTips(currentCategory, currentPage);
+        });
+        paginationContainer.appendChild(pageButton);
+      }
+    }
+    
+    // Add event listeners to category buttons
+    categoryButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        // Remove active class from all buttons
+        categoryButtons.forEach(btn => btn.classList.remove('active'));
+        
+        // Add active class to clicked button
+        button.classList.add('active');
+        
+        // Update current category and display tips
+        currentCategory = button.dataset.category;
+        currentPage = 1; // Reset to first page on category change
+        displayTips(currentCategory, currentPage);
+      });
+    });
+    
+    // Initial display
+    displayTips(currentCategory, currentPage);
+  });
+</script>
+{% endblock %}

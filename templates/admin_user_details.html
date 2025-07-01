@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Details - Admin Dashboard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+  <style>
+    :root {
+      --admin-primary: #2c3e50;
+      --admin-secondary: #e74c3c;
+      --admin-accent: #3498db;
+      --admin-success: #2ecc71;
+      --admin-warning: #f39c12;
+      --admin-danger: #e74c3c;
+      --admin-info: #3498db;
+      --text-dark: #2c3e50;
+      --text-muted: #7f8c8d;
+      --text-light: #ecf0f1;
+      --bg-dark: #2c3e50;
+      --bg-light: #ecf0f1;
+      --bg-card: #ffffff;
+      --border-color: #ddd;
+    }
+    
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f5f7fa;
+      color: var(--text-dark);
+    }
+    
+    .admin-container {
+      display: flex;
+      min-height: 100vh;
+    }
+    
+    /* Sidebar */
+    .admin-sidebar {
+      width: 250px;
+      background-color: var(--bg-dark);
+      color: var(--text-light);
+      position: fixed;
+      height: 100vh;
+      overflow-y: auto;
+      transition: all 0.3s;
+      z-index: 1000;
+      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    .admin-sidebar-header {
+      padding: 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      text-align: center;
+    }
+    
+    .admin-sidebar-header h2 {
+      margin: 0;
+      font-size: 1.5rem;
+      color: var(--admin-secondary);
+      font-weight: 700;
+    }
+    
+    .admin-badge {
+      background-color: var(--admin-secondary);
+      color: white;
+      padding: 3px 8px;
+      border-radius: 20px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      display: inline-block;
+      margin-top: 5px;
+    }
+    
+    .admin-nav {
+      padding: 20px 0;
+    }
+    
+    .admin-nav-item {
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      color: var(--text-light);
+      text-decoration: none;
+      transition: all 0.3s;
+      margin-bottom: 5px;
+    }
+    
+    .admin-nav-item:hover, .admin-nav-item.active {
+      background-color: rgba(255, 255, 255, 0.1);
+      border-left: 4px solid var(--admin-secondary);
+    }
+    
+    .admin-nav-item i {
+      margin-right: 10px;
+      font-size: 1.1rem;
+      width: 20px;
+      text-align: center;
+    }
+    
+    /* Main content */
+    .admin-content {
+      flex: 1;
+      margin-left: 250px;
+      padding: 25px;
+      transition: all 0.3s;
+    }
+    
+    .admin-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .admin-header h1 {
+      margin: 0;
+      color: var(--text-dark);
+      font-weight: 700;
+      font-size: 1.8rem;
+    }
+    
+    .admin-user-menu {
+      display: flex;
+      align-items: center;
+    }
+    
+    .admin-user-menu .user-name {
+      margin-right: 15px;
+      font-weight: 600;
+      color: var(--text-dark);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    
+    .logout-btn, .btn {
+      background-color: var(--admin-secondary);
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      text-decoration: none;
+    }
+    
+    .logout-btn:hover, .btn:hover {
+      background-color: var(--admin-danger);
+      transform: translateY(-2px);
+    }
+    
+    .btn-primary {
+      background-color: var(--admin-accent);
+    }
+    
+    .btn-primary:hover {
+      background-color: #2980b9;
+    }
+    
+    .btn-success {
+      background-color: var(--admin-success);
+    }
+    
+    .btn-success:hover {
+      background-color: #27ae60;
+    }
+    
+    /* User details page */
+    .user-info-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 25px;
+    }
+    
+    .user-info-container {
+      background-color: var(--bg-card);
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      padding: 25px;
+      margin-bottom: 30px;
+    }
+    
+    .user-info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
+    }
+    
+    .user-info-item {
+      margin-bottom: 15px;
+    }
+    
+    .user-info-item label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 5px;
+    }
+    
+    .user-info-item .value {
+      font-size: 1.1rem;
+      color: var(--text-dark);
+    }
+    
+    .empty-value {
+      color: var(--text-muted);
+      font-style: italic;
+    }
+    
+    .admin-badge-sm {
+      background-color: var(--admin-accent);
+      color: white;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      display: inline-block;
+    }
+    
+    .admin-badge-sm.admin {
+      background-color: var(--admin-primary);
+    }
+    
+    .admin-badge-sm.user {
+      background-color: var(--admin-accent);
+    }
+    
+    /* Section headers */
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 30px 0 15px;
+    }
+    
+    .section-header h2 {
+      margin: 0;
+      font-size: 1.4rem;
+      color: var(--text-dark);
+      font-weight: 700;
+    }
+    
+    /* Data table styles */
+    .data-table-container {
+      background-color: var(--bg-card);
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      padding: 20px;
+      overflow-x: auto;
+      margin-bottom: 30px;
+    }
+    
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 600px;
+    }
+    
+    .data-table th, .data-table td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .data-table th {
+      background-color: #f9f9f9;
+      font-weight: 600;
+      color: var(--text-dark);
+    }
+    
+    .data-table tr:hover {
+      background-color: #f5f9fc;
+    }
+    
+    .data-table tr:last-child td {
+      border-bottom: none;
+    }
+    
+    .no-data {
+      text-align: center;
+      padding: 30px;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+    
+    /* Metadata/tags display */
+    .metadata-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    
+    .metadata-tag {
+      background-color: #f3f4f6;
+      border-radius: 20px;
+      padding: 3px 10px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    
+    /* Flash messages */
+    .flash-messages {
+      margin-bottom: 20px;
+    }
+    
+    .flash-message {
+      padding: 12px 15px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .flash-message.error {
+      background-color: #fee2e2;
+      color: #b91c1c;
+      border-left: 4px solid #dc2626;
+    }
+    
+    .flash-message.success {
+      background-color: #d1fae5;
+      color: #065f46;
+      border-left: 4px solid #059669;
+    }
+    
+    .flash-message.info {
+      background-color: #dbeafe;
+      color: #1e40af;
+      border-left: 4px solid #3b82f6;
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-container">
+    <!-- Sidebar -->
+    <div class="admin-sidebar">
+      <div class="admin-sidebar-header">
+        <h2>Health Assistant</h2>
+        <span class="admin-badge">Admin Panel</span>
+      </div>
+      <nav class="admin-nav">
+        <a href="{{ url_for('admin_dashboard') }}" class="admin-nav-item">
+          <i class="fas fa-tachometer-alt"></i> Dashboard
+        </a>
+        <a href="{{ url_for('admin_users') }}" class="admin-nav-item active">
+          <i class="fas fa-users"></i> Users
+        </a>
+        <a href="{{ url_for('home') }}" class="admin-nav-item">
+          <i class="fas fa-home"></i> Main Site
+        </a>
+      </nav>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="admin-content">
+      <!-- Header -->
+      <div class="admin-header">
+        <h1>User Details</h1>
+        <div class="admin-user-menu">
+          <span class="user-name">
+            <i class="fas fa-user-shield"></i>
+            {{ session.get('username', 'Admin') }}
+          </span>
+          <a href="{{ url_for('logout') }}" class="logout-btn">
+            <i class="fas fa-sign-out-alt"></i> Logout
+          </a>
+        </div>
+      </div>
+      
+      <!-- Flash Messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="flash-messages">
+            {% for category, message in messages %}
+              <div class="flash-message {{ category }}">
+                {% if category == 'error' %}
+                  <i class="fas fa-exclamation-circle"></i>
+                {% elif category == 'success' %}
+                  <i class="fas fa-check-circle"></i>
+                {% else %}
+                  <i class="fas fa-info-circle"></i>
+                {% endif %}
+                {{ message }}
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+      
+      <!-- User Info Header -->
+      <div class="user-info-header">
+        <div>
+          <h2>{{ user.username }}</h2>
+          <p style="margin-top: 5px; color: var(--text-muted);">{{ user.email }}</p>
+          <span class="admin-badge-sm {{ 'admin' if user.is_admin else 'user' }}">
+            {{ 'Administrator' if user.is_admin else 'User' }}
+          </span>
+        </div>
+        <div>
+          <a href="{{ url_for('admin_edit_user', user_id=user.id) }}" class="btn btn-primary">
+            <i class="fas fa-edit"></i> Edit User
+          </a>
+        </div>
+      </div>
+      
+      <!-- User Information -->
+      <div class="user-info-container">
+        <div class="user-info-grid">
+          <div class="user-info-item">
+            <label>Username</label>
+            <div class="value">{{ user.username }}</div>
+          </div>
+          <div class="user-info-item">
+            <label>Email</label>
+            <div class="value">{{ user.email }}</div>
+          </div>
+          <div class="user-info-item">
+            <label>First Name</label>
+            <div class="value">{{ user.first_name or '<span class="empty-value">Not set</span>' | safe }}</div>
+          </div>
+          <div class="user-info-item">
+            <label>Last Name</label>
+            <div class="value">{{ user.last_name or '<span class="empty-value">Not set</span>' | safe }}</div>
+          </div>
+          <div class="user-info-item">
+            <label>Date of Birth</label>
+            <div class="value">{{ user.date_of_birth or '<span class="empty-value">Not set</span>' | safe }}</div>
+          </div>
+          <div class="user-info-item">
+            <label>Gender</label>
+            <div class="value">{{ user.gender or '<span class="empty-value">Not set</span>' | safe }}</div>
+          </div>
+          <div class="user-info-item">
+            <label>Created At</label>
+            <div class="value">{{ user.created_at }}</div>
+          </div>
+          <div class="user-info-item">
+            <label>Last Login</label>
+            <div class="value">{{ user.last_login or '<span class="empty-value">Never</span>' | safe }}</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Health Data Section -->
+      <div class="section-header">
+        <h2>Health Monitoring Data</h2>
+      </div>
+      
+      <div class="data-table-container">
+        {% if health_data %}
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Heart Rate</th>
+              <th>Blood Pressure</th>
+              <th>Oxygen Level</th>
+              <th>Body Temperature</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for record in health_data %}
+            <tr>
+              <td>{{ record.created_at }}</td>
+              <td>{{ record.heart_rate }} bpm</td>
+              <td>
+                {% if record.blood_pressure is mapping %}
+                  {{ record.blood_pressure.systolic }}/{{ record.blood_pressure.diastolic }} mmHg
+                {% else %}
+                  {{ record.blood_pressure or 'N/A' }}
+                {% endif %}
+              </td>
+              <td>{{ record.oxygen_level }}%</td>
+              <td>{{ record.body_temperature or 'N/A' }}{% if record.body_temperature %} °F{% endif %}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <div class="no-data">No health monitoring data available for this user.</div>
+        {% endif %}
+      </div>
+      
+      <!-- Medications Section -->
+      <div class="section-header">
+        <h2>Medication Reminders</h2>
+      </div>
+      
+      <div class="data-table-container">
+        {% if medications %}
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Medication</th>
+              <th>Dosage</th>
+              <th>Reminder Time</th>
+              <th>Frequency</th>
+              <th>Start Date</th>
+              <th>End Date</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for med in medications %}
+            <tr>
+              <td>{{ med.medication_name }}</td>
+              <td>{{ med.dosage or 'N/A' }}</td>
+              <td>{{ med.reminder_time }}</td>
+              <td>{{ med.frequency.replace('_', ' ').title() }}</td>
+              <td>{{ med.start_date }}</td>
+              <td>{{ med.end_date or 'Ongoing' }}</td>
+              <td>
+                <span class="admin-badge-sm {{ 'admin-success' if med.is_active else 'admin-danger' }}">
+                  {{ 'Active' if med.is_active else 'Inactive' }}
+                </span>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <div class="no-data">No medication reminders available for this user.</div>
+        {% endif %}
+      </div>
+      
+      <!-- Disease Predictions Section -->
+      <div class="section-header">
+        <h2>Disease Predictions</h2>
+      </div>
+      
+      <div class="data-table-container">
+        {% if predictions %}
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Predicted Disease</th>
+              <th>Confidence</th>
+              <th>Symptoms</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for pred in predictions %}
+            <tr>
+              <td>{{ pred.predicted_at }}</td>
+              <td>{{ pred.predicted_disease }}</td>
+              <td>{{ "%.1f" | format(pred.confidence_score * 100) }}%</td>
+              <td>
+                <div class="metadata-container">
+                  {% if pred.symptoms %}
+                    {% if pred.symptoms is string %}
+                      <span class="metadata-tag">{{ pred.symptoms }}</span>
+                    {% elif pred.symptoms is iterable %}
+                      {% for symptom in pred.symptoms %}
+                        <span class="metadata-tag">{{ symptom.replace('_', ' ').title() }}</span>
+                      {% endfor %}
+                    {% endif %}
+                  {% else %}
+                    N/A
+                  {% endif %}
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <div class="no-data">No disease predictions available for this user.</div>
+        {% endif %}
+      </div>
+      
+      <!-- Back button -->
+      <div style="margin-top: 30px;">
+        <a href="{{ url_for('admin_users') }}" class="btn">
+          <i class="fas fa-arrow-left"></i> Back to Users
+        </a>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // Format date strings more nicely
+    document.addEventListener('DOMContentLoaded', function() {
+      const dateElements = document.querySelectorAll('td:first-child');
+      dateElements.forEach(el => {
+        const dateStr = el.textContent;
+        if (dateStr && dateStr.includes('-')) {
+          try {
+            const date = new Date(dateStr);
+            if (!isNaN(date)) {
+              const formattedDate = date.toLocaleString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              });
+              el.textContent = formattedDate;
+            }
+          } catch (e) {
+            console.log('Date parsing error:', e);
+          }
+        }
+      });
+    });
+  </script>
+</body>
+</html> 

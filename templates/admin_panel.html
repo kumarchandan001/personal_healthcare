@@ -1,0 +1,684 @@
+{% extends "includes/layout.html" %}
+
+{% block title %}Health Advisor - Admin Panel{% endblock %}
+
+{% block additional_styles %}
+<style>
+  :root {
+    /* Enhanced color palette */
+    --primary: #4f46e5;
+    --primary-light: rgba(79, 70, 229, 0.1);
+    --primary-dark: #4338ca;
+    --secondary: #10b981;
+    --secondary-light: rgba(16, 185, 129, 0.1);
+    --accent: #f59e0b;
+    --accent-light: rgba(245, 158, 11, 0.1);
+    --text-dark: #1f2937;
+    --text-light: #6b7280;
+    --background: #f3f4f6;
+    --white: #ffffff;
+    --success: #059669;
+    --warning: #d97706;
+    --danger: #dc2626;
+    --border-radius: 16px;
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+    --shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+    --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.1);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --focus-ring: 0 0 0 3px rgba(79, 70, 229, 0.4);
+    
+    /* New glass effect variables */
+    --glass-bg: rgba(255, 255, 255, 0.9);
+    --glass-border: rgba(255, 255, 255, 0.2);
+    --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+  }
+
+  body {
+    background: linear-gradient(135deg, var(--background) 0%, #ffffff 100%);
+    min-height: 100vh;
+  }
+
+  .admin-container {
+    max-width: 1800px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  /* Enhanced header with glass effect */
+  .admin-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    padding: 2rem;
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--border-radius);
+    box-shadow: var(--glass-shadow);
+  }
+
+  .admin-title {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .admin-title h1 {
+    font-size: 2.5rem;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    -webkit-text-fill-color: transparent;
+    margin: 0;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+
+  .admin-title i {
+    font-size: 2rem;
+    color: var(--primary);
+    background: var(--primary-light);
+    padding: 1rem;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    transition: var(--transition);
+  }
+
+  .admin-title i:hover {
+    transform: rotate(15deg);
+  }
+
+  /* Enhanced buttons */
+  .admin-btn {
+    padding: 0.875rem 1.75rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    border: none;
+    letter-spacing: 0.5px;
+  }
+
+  .admin-btn-primary {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    box-shadow: var(--shadow);
+  }
+
+  .admin-btn-primary:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .admin-btn-secondary {
+    background: var(--glass-bg);
+    color: var(--primary);
+    border: 1px solid var(--primary-light);
+    backdrop-filter: blur(5px);
+  }
+
+  .admin-btn-secondary:hover {
+    background: var(--primary-light);
+    transform: translateY(-2px);
+  }
+
+  /* Enhanced sidebar */
+  .admin-sidebar {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    box-shadow: var(--glass-shadow);
+    height: fit-content;
+  }
+
+  .admin-menu-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    border-radius: 12px;
+    color: var(--text-dark);
+    text-decoration: none;
+    transition: var(--transition);
+    font-weight: 500;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .admin-menu-link::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 0;
+    background: var(--primary-light);
+    z-index: -1;
+    transition: var(--transition);
+    border-radius: 12px;
+  }
+
+  .admin-menu-link:hover::before {
+    width: 100%;
+  }
+
+  .admin-menu-link.active {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    box-shadow: var(--shadow);
+  }
+
+  /* Enhanced dashboard cards */
+  .dashboard-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--border-radius);
+    padding: 1.75rem;
+    box-shadow: var(--glass-shadow);
+    transition: var(--transition);
+  }
+
+  .dashboard-card:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: var(--shadow-xl);
+  }
+
+  .dashboard-card-value {
+    font-size: 2.75rem;
+    font-weight: 800;
+    margin: 0.75rem 0 1rem;
+    color: var(--text-dark);
+    letter-spacing: -1px;
+  }
+
+  /* Enhanced table */
+  .table-container {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--border-radius);
+    padding: 1.75rem;
+    box-shadow: var(--glass-shadow);
+    overflow: hidden;
+  }
+
+  .admin-table th {
+    font-weight: 600;
+    color: var(--primary);
+    background: var(--primary-light);
+    padding: 1.25rem 1rem;
+    font-size: 0.95rem;
+    letter-spacing: 0.5px;
+  }
+
+  .admin-table td {
+    padding: 1.25rem 1rem;
+    transition: var(--transition);
+  }
+
+  .admin-table tbody tr:hover {
+    background: var(--primary-light);
+    transform: scale(1.01);
+  }
+
+  /* Enhanced action buttons */
+  .action-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: var(--transition);
+    border: none;
+    opacity: 0.7;
+  }
+
+  .action-btn:hover {
+    transform: translateY(-2px) scale(1.1);
+    opacity: 1;
+  }
+
+  /* Enhanced status indicators */
+  .status-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 8px;
+    position: relative;
+  }
+
+  .status-indicator::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: inherit;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0% {
+      transform: scale(1);
+      opacity: 0.5;
+    }
+    70% {
+      transform: scale(2);
+      opacity: 0;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 0;
+    }
+  }
+
+  /* Enhanced chart cards */
+  .chart-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--border-radius);
+    padding: 1.75rem;
+    box-shadow: var(--glass-shadow);
+    transition: var(--transition);
+  }
+
+  .chart-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-xl);
+  }
+
+  .chart-action {
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    background: var(--background);
+    border: 1px solid var(--primary-light);
+    cursor: pointer;
+    transition: var(--transition);
+  }
+
+  .chart-action:hover {
+    background: var(--primary-light);
+    color: var(--primary);
+    transform: translateY(-2px);
+  }
+
+  .chart-action.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+  }
+
+  /* Enhanced responsiveness */
+  @media (max-width: 1024px) {
+    .admin-grid {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+
+    .admin-sidebar {
+      position: sticky;
+      top: 20px;
+      z-index: 10;
+    }
+
+    .admin-menu {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .admin-container {
+      padding: 1rem;
+    }
+
+    .admin-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1.5rem;
+      padding: 1.5rem;
+    }
+
+    .dashboard-cards {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+
+    .chart-container {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+  <header class="admin-header">
+    <div class="admin-title">
+      <i class="fas fa-shield-alt"></i>
+      <h1>Health Advisor Admin</h1>
+    </div>
+    <div class="admin-actions">
+      <button class="admin-btn admin-btn-primary">
+        <i class="fas fa-plus"></i> Add New Symptom
+      </button>
+      <button class="admin-btn admin-btn-secondary">
+        <i class="fas fa-cog"></i> Settings
+      </button>
+    </div>
+  </header>
+
+  <div class="admin-grid">
+    <aside class="admin-sidebar">
+      <ul class="admin-menu">
+        <li class="admin-menu-item">
+          <a href="#" class="admin-menu-link active">
+            <i class="fas fa-tachometer-alt"></i> Dashboard
+          </a>
+        </li>
+        <li class="admin-menu-item">
+          <a href="#" class="admin-menu-link">
+            <i class="fas fa-notes-medical"></i> Symptom Management
+          </a>
+        </li>
+        <li class="admin-menu-item">
+          <a href="#" class="admin-menu-link">
+            <i class="fas fa-users"></i> User Statistics
+          </a>
+        </li>
+        <li class="admin-menu-item">
+          <a href="#" class="admin-menu-link">
+            <i class="fas fa-book-medical"></i> Advice Library
+          </a>
+        </li>
+        <li class="admin-menu-item">
+          <a href="#" class="admin-menu-link">
+            <i class="fas fa-comment-medical"></i> User Feedback
+          </a>
+        </li>
+        <li class="admin-menu-item">
+          <a href="#" class="admin-menu-link">
+            <i class="fas fa-chart-line"></i> Analytics
+          </a>
+        </li>
+        <li class="admin-menu-item">
+          <a href="#" class="admin-menu-link">
+            <i class="fas fa-cog"></i> System Settings
+          </a>
+        </li>
+      </ul>
+    </aside>
+
+    <main class="admin-content">
+      <h2 class="admin-section-title">Dashboard Overview</h2>
+
+      <div class="dashboard-cards">
+        <div class="dashboard-card">
+          <div class="dashboard-card-header">
+            <h3 class="dashboard-card-title">Total Users</h3>
+            <div class="dashboard-card-icon users">
+              <i class="fas fa-users"></i>
+            </div>
+          </div>
+          <div class="dashboard-card-value">3,845</div>
+          <div class="dashboard-card-trend trend-up">
+            <i class="fas fa-arrow-up"></i> 12.5% since last month
+          </div>
+        </div>
+
+        <div class="dashboard-card">
+          <div class="dashboard-card-header">
+            <h3 class="dashboard-card-title">Health Queries</h3>
+            <div class="dashboard-card-icon queries">
+              <i class="fas fa-search"></i>
+            </div>
+          </div>
+          <div class="dashboard-card-value">12,583</div>
+          <div class="dashboard-card-trend trend-up">
+            <i class="fas fa-arrow-up"></i> 8.2% since last month
+          </div>
+        </div>
+
+        <div class="dashboard-card">
+          <div class="dashboard-card-header">
+            <h3 class="dashboard-card-title">Active Symptoms</h3>
+            <div class="dashboard-card-icon symptoms">
+              <i class="fas fa-virus"></i>
+            </div>
+          </div>
+          <div class="dashboard-card-value">67</div>
+          <div class="dashboard-card-trend trend-up">
+            <i class="fas fa-arrow-up"></i> 3 new this month
+          </div>
+        </div>
+
+        <div class="dashboard-card">
+          <div class="dashboard-card-header">
+            <h3 class="dashboard-card-title">User Feedback</h3>
+            <div class="dashboard-card-icon feedback">
+              <i class="fas fa-comment-alt"></i>
+            </div>
+          </div>
+          <div class="dashboard-card-value">325</div>
+          <div class="dashboard-card-trend trend-down">
+            <i class="fas fa-arrow-down"></i> 4.2% since last month
+          </div>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <h3 class="admin-section-title">Recent Health Queries</h3>
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>User</th>
+              <th>Symptoms</th>
+              <th>Severity</th>
+              <th>Date</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>#HQ-3592</td>
+              <td>John D.</td>
+              <td>
+                <span class="symptom-badge badge-respiratory">Cough</span>
+                <span class="symptom-badge badge-general">Fever</span>
+              </td>
+              <td>Moderate</td>
+              <td>Sept 10, 2023</td>
+              <td><span class="status-indicator status-active"></span> Completed</td>
+              <td class="action-cell">
+                <button class="action-btn view-btn"><i class="fas fa-eye"></i></button>
+                <button class="action-btn edit-btn"><i class="fas fa-edit"></i></button>
+                <button class="action-btn delete-btn"><i class="fas fa-trash"></i></button>
+              </td>
+            </tr>
+            <tr>
+              <td>#HQ-3591</td>
+              <td>Sarah J.</td>
+              <td>
+                <span class="symptom-badge badge-digestive">Nausea</span>
+                <span class="symptom-badge badge-digestive">Stomach Pain</span>
+              </td>
+              <td>Severe</td>
+              <td>Sept 9, 2023</td>
+              <td><span class="status-indicator status-active"></span> Completed</td>
+              <td class="action-cell">
+                <button class="action-btn view-btn"><i class="fas fa-eye"></i></button>
+                <button class="action-btn edit-btn"><i class="fas fa-edit"></i></button>
+                <button class="action-btn delete-btn"><i class="fas fa-trash"></i></button>
+              </td>
+            </tr>
+            <tr>
+              <td>#HQ-3590</td>
+              <td>Michael R.</td>
+              <td>
+                <span class="symptom-badge badge-neurological">Headache</span>
+                <span class="symptom-badge badge-neurological">Dizziness</span>
+              </td>
+              <td>Mild</td>
+              <td>Sept 9, 2023</td>
+              <td><span class="status-indicator status-active"></span> Completed</td>
+              <td class="action-cell">
+                <button class="action-btn view-btn"><i class="fas fa-eye"></i></button>
+                <button class="action-btn edit-btn"><i class="fas fa-edit"></i></button>
+                <button class="action-btn delete-btn"><i class="fas fa-trash"></i></button>
+              </td>
+            </tr>
+            <tr>
+              <td>#HQ-3589</td>
+              <td>Lisa T.</td>
+              <td>
+                <span class="symptom-badge badge-respiratory">Shortness of Breath</span>
+                <span class="symptom-badge badge-general">Fatigue</span>
+              </td>
+              <td>Moderate</td>
+              <td>Sept 8, 2023</td>
+              <td><span class="status-indicator status-pending"></span> Pending Review</td>
+              <td class="action-cell">
+                <button class="action-btn view-btn"><i class="fas fa-eye"></i></button>
+                <button class="action-btn edit-btn"><i class="fas fa-edit"></i></button>
+                <button class="action-btn delete-btn"><i class="fas fa-trash"></i></button>
+              </td>
+            </tr>
+            <tr>
+              <td>#HQ-3588</td>
+              <td>Robert K.</td>
+              <td>
+                <span class="symptom-badge badge-general">Body Aches</span>
+                <span class="symptom-badge badge-general">Chills</span>
+              </td>
+              <td>Mild</td>
+              <td>Sept 7, 2023</td>
+              <td><span class="status-indicator status-inactive"></span> Archived</td>
+              <td class="action-cell">
+                <button class="action-btn view-btn"><i class="fas fa-eye"></i></button>
+                <button class="action-btn edit-btn"><i class="fas fa-edit"></i></button>
+                <button class="action-btn delete-btn"><i class="fas fa-trash"></i></button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="pagination">
+          <div class="page-item"><i class="fas fa-chevron-left"></i></div>
+          <div class="page-item active">1</div>
+          <div class="page-item">2</div>
+          <div class="page-item">3</div>
+          <div class="page-item">...</div>
+          <div class="page-item">10</div>
+          <div class="page-item"><i class="fas fa-chevron-right"></i></div>
+        </div>
+      </div>
+
+      <div class="chart-container">
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3 class="chart-title">User Activity</h3>
+            <div class="chart-actions">
+              <button class="chart-action active">Week</button>
+              <button class="chart-action">Month</button>
+              <button class="chart-action">Year</button>
+            </div>
+          </div>
+          <div class="chart-placeholder">
+            <p>Activity Chart - Implement with Chart.js or similar</p>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3 class="chart-title">Top Symptoms</h3>
+            <div class="chart-actions">
+              <button class="chart-action active">All</button>
+              <button class="chart-action">Respiratory</button>
+              <button class="chart-action">Digestive</button>
+            </div>
+          </div>
+          <div class="chart-placeholder">
+            <p>Symptoms Chart - Implement with Chart.js or similar</p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block additional_scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Toggle active class on sidebar menu items
+    const menuItems = document.querySelectorAll('.admin-menu-link');
+    menuItems.forEach(item => {
+      item.addEventListener('click', function(e) {
+        e.preventDefault();
+        menuItems.forEach(i => i.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+
+    // Toggle chart period buttons
+    const chartActions = document.querySelectorAll('.chart-action');
+    chartActions.forEach(action => {
+      action.addEventListener('click', function() {
+        const parent = this.parentElement;
+        parent.querySelectorAll('.chart-action').forEach(a => a.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+
+    // Simulate data loading with a subtle animation
+    const cards = document.querySelectorAll('.dashboard-card');
+    setTimeout(() => {
+      cards.forEach((card, index) => {
+        setTimeout(() => {
+          card.style.opacity = '0';
+          card.style.transform = 'translateY(20px)';
+          setTimeout(() => {
+            card.style.transition = 'all 0.5s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+          }, 50);
+        }, index * 100);
+      });
+    }, 500);
+
+    // Add hover effects to table rows
+    const tableRows = document.querySelectorAll('.admin-table tbody tr');
+    tableRows.forEach(row => {
+      row.addEventListener('mouseover', function() {
+        this.querySelectorAll('.action-btn').forEach(btn => {
+          btn.style.opacity = '1';
+        });
+      });
+      
+      row.addEventListener('mouseout', function() {
+        this.querySelectorAll('.action-btn').forEach(btn => {
+          btn.style.opacity = '0.7';
+        });
+      });
+    });
+  });
+</script>
+{% endblock %} 

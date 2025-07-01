@@ -1,0 +1,1457 @@
+{% extends "includes/layout.html" %}
+
+{% block title %}Health Advice{% endblock %}
+
+{% block additional_styles %}
+<style>
+  :root {
+    --primary: #4f46e5;
+    --primary-light: rgba(79, 70, 229, 0.1);
+    --primary-dark: #4338ca;
+    --secondary: #10b981;
+    --secondary-light: rgba(16, 185, 129, 0.1);
+    --accent: #f59e0b;
+    --accent-light: rgba(245, 158, 11, 0.1);
+    --text-dark: #1f2937;
+    --text-light: #6b7280;
+    --background: #f9fafb;
+    --white: #ffffff;
+    --success: #059669;
+    --warning: #d97706;
+    --danger: #dc2626;
+    --border-radius: 20px;
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+    --shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+    --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.1);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --focus-ring: 0 0 0 3px rgba(79, 70, 229, 0.4);
+  }
+
+  /* Accessibility improvements */
+  :focus {
+    outline: none;
+    box-shadow: var(--focus-ring);
+  }
+
+  /* Skip to main content for keyboard users */
+  .skip-to-content {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: var(--primary);
+    color: white;
+    padding: 8px;
+    z-index: 100;
+    transition: top 0.3s;
+  }
+
+  .skip-to-content:focus {
+    top: 0;
+  }
+
+  .health-advice-container {
+    max-width: 1800px;
+    margin: 2rem auto;
+    padding: 0 2rem;
+  }
+
+  .hero-section {
+    width: 100%;
+    margin: 0 auto 3rem auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 5rem 2rem;
+    background: linear-gradient(135deg, var(--primary-light) 0%, rgba(79, 70, 229, 0.05) 100%),
+                radial-gradient(circle at top right, var(--secondary-light), transparent);
+    border-radius: var(--border-radius);
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--shadow-xl);
+  }
+
+  .hero-section::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, var(--accent-light) 0%, transparent 70%);
+    transform: rotate(-15deg);
+    pointer-events: none;
+  }
+
+  .hero-section h1 {
+    font-size: 3.5rem;
+    background: linear-gradient(to right, var(--primary) 0%, var(--secondary) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    line-height: 1.2;
+    text-align: center;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .hero-section p {
+    color: var(--text-light);
+    font-size: 1.25rem;
+    max-width: 700px;
+    margin: 0 auto;
+    line-height: 1.7;
+  }
+
+  .symptoms-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 2px solid var(--primary-light);
+    background: linear-gradient(135deg, var(--primary-light) 0%, rgba(79, 70, 229, 0.05) 100%);
+    border-radius: var(--border-radius);
+    width: 98%;
+    margin-left: auto;
+    margin-right: auto;
+    box-shadow: var(--shadow);
+  }
+
+  .symptoms-header h2 {
+    font-size: 2.5rem;
+    background: linear-gradient(to right, var(--primary), var(--secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin: 0;
+    font-weight: 700;
+    text-align: center;
+  }
+
+  .symptoms-section {
+    background: var(--white);
+    border-radius: var(--border-radius);
+    padding: 3rem;
+    margin: 2rem auto;
+    box-shadow: var(--shadow-lg);
+    width: 98%;
+  }
+
+  .symptoms-categories {
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+    width: 100%;
+  }
+
+  .category-section {
+    background: var(--background);
+    border-radius: var(--border-radius);
+    padding: 2.5rem;
+    box-shadow: var(--shadow);
+    width: 98%;
+    margin: 0 auto 2.5rem auto;
+  }
+
+  .category-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    width: 100%;
+  }
+
+  .category-header i {
+    font-size: 1.75rem;
+    color: var(--primary);
+    background: var(--primary-light);
+    padding: 1rem;
+    border-radius: 12px;
+  }
+
+  .category-header h3 {
+    font-size: 1.75rem;
+    color: var(--text-dark);
+    margin: 0;
+    font-weight: 600;
+    text-align: center;
+  }
+
+  .category-symptoms {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    gap: 1.2rem;
+    padding: 0.5rem 0;
+    width: 100%;
+    max-width: 1800px;
+    margin: 0 auto;
+  }
+
+  .symptom-chip {
+    flex: 1 1 0;
+    min-width: 120px;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    justify-content: flex-start;
+    text-align: left;
+    margin: 0;
+    white-space: normal;
+  }
+
+  .symptom-chip:focus {
+    box-shadow: var(--focus-ring);
+    border-color: var(--primary);
+  }
+
+  .symptom-chip:hover {
+    background: var(--primary-light);
+    color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+  }
+
+  .symptom-chip::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 0;
+    background: linear-gradient(135deg, var(--primary-light), transparent);
+    transition: var(--transition);
+    opacity: 0;
+    z-index: -1;
+  }
+
+  .symptom-chip:hover::after {
+    height: 100%;
+    opacity: 1;
+  }
+
+  .symptom-chip.selected {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: var(--white);
+    border: none;
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-3px);
+  }
+
+  .symptom-chip.selected:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-xl);
+  }
+
+  .symptom-chip i {
+    font-size: 1.1rem;
+  }
+
+  .symptom-tooltip {
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100%);
+    background: var(--text-dark);
+    color: var(--white);
+    padding: 0.5rem 1rem;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    opacity: 0;
+    visibility: hidden;
+    transition: var(--transition);
+    z-index: 100;
+    width: max-content;
+    max-width: 200px;
+    box-shadow: var(--shadow);
+    pointer-events: none;
+  }
+
+  .symptom-chip:hover .symptom-tooltip {
+    opacity: 1;
+    visibility: visible;
+    bottom: 0;
+  }
+
+  .severity-section {
+    background: var(--white);
+    border-radius: var(--border-radius);
+    padding: 3rem;
+    margin: 2.5rem 0;
+    box-shadow: var(--shadow-lg);
+    position: relative;
+    overflow: hidden;
+    width: 95%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .severity-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(to right, var(--secondary), var(--accent));
+  }
+
+  .severity-header {
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+
+  .severity-header h3 {
+    font-size: 2.5rem;
+    background: linear-gradient(to right, var(--secondary), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 1rem;
+    font-weight: 700;
+  }
+
+  .severity-header p {
+    color: var(--text-light);
+    font-size: 1.2rem;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .severity-options {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .severity-option {
+    flex: 1;
+    min-width: 280px;
+    max-width: 320px;
+    padding: 2.5rem;
+    border-radius: var(--border-radius);
+    background: var(--background);
+    cursor: pointer;
+    transition: var(--transition);
+    text-align: center;
+    border: 2px solid transparent;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .severity-option::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, var(--primary-light), transparent);
+    opacity: 0;
+    transition: var(--transition);
+  }
+
+  .severity-option:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .severity-option:hover::before {
+    opacity: 1;
+  }
+
+  .severity-option.selected {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: var(--white);
+    box-shadow: var(--shadow-xl);
+  }
+
+  .severity-option i {
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+    display: block;
+    position: relative;
+    z-index: 1;
+  }
+
+  .severity-option h4 {
+    font-size: 1.4rem;
+    margin-bottom: 1rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .severity-option p {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    position: relative;
+    z-index: 1;
+  }
+
+  .selected-symptoms-section {
+    background: var(--white);
+    border-radius: var(--border-radius);
+    padding: 2.5rem;
+    margin: 2.5rem 0;
+    box-shadow: var(--shadow-lg);
+    position: relative;
+    overflow: hidden;
+    width: 95%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .selected-symptoms-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(to right, var(--accent), var(--primary));
+  }
+
+  .selected-symptoms-header {
+    text-align: center;
+  }
+
+  .selected-symptoms-header h3 {
+    font-size: 2rem;
+    text-align: center;
+  }
+
+  .clear-all-btn {
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(to right, var(--danger), #ef4444);
+    color: var(--white);
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: var(--transition);
+    box-shadow: var(--shadow);
+  }
+
+  .clear-all-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .selected-symptoms-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .selected-symptom-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: var(--white);
+    border-radius: 25px;
+    font-size: 1.1rem;
+    box-shadow: var(--shadow);
+  }
+
+  .remove-symptom {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition);
+    font-size: 1rem;
+  }
+
+  .remove-symptom:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg);
+  }
+
+  .get-advice-btn {
+    display: block;
+    width: 100%;
+    max-width: 400px;
+    margin: 3rem auto;
+    padding: 1.25rem 2.5rem;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: var(--white);
+    border: none;
+    border-radius: var(--border-radius);
+    font-size: 1.25rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    box-shadow: var(--shadow-lg);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .get-advice-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, var(--secondary), var(--primary));
+    opacity: 0;
+    transition: var(--transition);
+  }
+
+  .get-advice-btn:not(:disabled):hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-xl);
+  }
+
+  .get-advice-btn:not(:disabled):hover::before {
+    opacity: 1;
+  }
+
+  .get-advice-btn:disabled {
+    background: var(--text-light);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  .advice-section {
+    display: none;
+    background: var(--white);
+    border-radius: var(--border-radius);
+    padding: 3rem;
+    margin: 2.5rem 0;
+    box-shadow: var(--shadow-xl);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .advice-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(to right, var(--primary), var(--secondary), var(--accent));
+  }
+
+  .advice-section.visible {
+    display: block;
+    animation: slideUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .advice-card {
+    background: var(--background);
+    border-radius: var(--border-radius);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow);
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .advice-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .advice-card h4 {
+    font-size: 1.4rem;
+    background: linear-gradient(to right, var(--primary), var(--secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: 700;
+  }
+
+  .advice-card h4 i {
+    font-size: 1.5rem;
+    color: var(--primary);
+  }
+
+  .advice-card ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .advice-card li {
+    margin-bottom: 1rem;
+    padding-left: 2rem;
+    position: relative;
+    line-height: 1.7;
+    font-size: 1.1rem;
+    color: var(--text-dark);
+  }
+
+  .advice-card li::before {
+    content: "•";
+    color: var(--primary);
+    font-weight: bold;
+    position: absolute;
+    left: 0.5rem;
+    font-size: 1.5rem;
+  }
+
+  .resources-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+  }
+
+  .resource-card {
+    background: var(--white);
+    border-radius: var(--border-radius);
+    padding: 2rem;
+    box-shadow: var(--shadow);
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .resource-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(to right, var(--primary), var(--secondary));
+    opacity: 0;
+    transition: var(--transition);
+  }
+
+  .resource-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .resource-card:hover::before {
+    opacity: 1;
+  }
+
+  .resource-card h5 {
+    color: var(--text-dark);
+    font-size: 1.25rem;
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+  }
+
+  .resource-card p {
+    color: var(--text-light);
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+  }
+
+  .resource-link {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.1rem;
+    transition: var(--transition);
+  }
+
+  .resource-link:hover {
+    color: var(--secondary);
+    transform: translateX(4px);
+  }
+
+  .resource-link i {
+    font-size: 1rem;
+    transition: var(--transition);
+  }
+
+  .resource-link:hover i {
+    transform: translateX(2px);
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+  }
+
+  @media (max-width: 1600px) {
+    .symptom-chip {
+      min-width: 180px;
+      max-width: 220px;
+      padding: 1rem;
+      font-size: 1rem;
+    }
+  }
+
+  @media (max-width: 1200px) {
+    .health-advice-container {
+      padding: 0 1rem;
+    }
+
+    .symptoms-section,
+    .category-section {
+      width: 100%;
+      padding: 2rem;
+    }
+
+    .category-symptoms {
+      justify-content: center;
+      max-width: 100%;
+    }
+
+    .symptom-chip {
+      min-width: 160px;
+      max-width: 200px;
+      font-size: 0.95rem;
+    }
+
+    .symptoms-header {
+      padding: 1.5rem 2rem;
+      width: 100%;
+    }
+
+    .symptoms-header h2 {
+      font-size: 2.5rem;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .health-advice-container {
+      padding: 0.5rem;
+    }
+
+    .symptoms-section, 
+    .severity-section, 
+    .selected-symptoms-section {
+      padding: 1.5rem;
+    }
+
+    .category-section {
+      padding: 1.5rem 1rem;
+    }
+
+    .hero-section h1 {
+      font-size: 2.5rem;
+    }
+
+    .symptoms-header {
+      padding: 1.5rem;
+    }
+
+    .symptoms-header h2 {
+      font-size: 2rem;
+    }
+
+    .symptoms-section {
+      padding: 1.5rem;
+    }
+
+    .symptom-chip {
+      min-width: 90px;
+      padding: 0.5rem;
+      font-size: 0.9rem;
+    }
+
+    .severity-options {
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .severity-option {
+      min-width: 100%;
+    }
+
+    .selected-symptom-tag {
+      width: 100%;
+      justify-content: space-between;
+    }
+
+    .get-advice-btn {
+      padding: 1rem 2rem;
+      font-size: 1.1rem;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<a href="#main-content" class="skip-to-content">Skip to content</a>
+
+<div class="health-advice-container" id="main-content">
+  <section class="hero-section">
+    <h1>Health Advisor</h1>
+    <p>Get personalized health recommendations by selecting your symptoms and their severity. Remember, this is not a substitute for professional medical advice.</p>
+  </section>
+
+  <section class="symptoms-section">
+    <div class="symptoms-header">
+      <h2>Select Your Symptoms</h2>
+      </div>
+    
+    <div class="instructions-card">
+      <i class="fas fa-info-circle"></i>
+      <p>Click on the symptoms you're experiencing. You can select multiple symptoms across different categories. Selected symptoms will appear in the summary section below.</p>
+    </div>
+
+    <div class="symptoms-categories">
+      <!-- General Symptoms -->
+      <div class="category-section">
+        <div class="category-header">
+          <i class="fas fa-user-md"></i>
+          <h3>General Symptoms</h3>
+        </div>
+        <div class="category-symptoms">
+          <div class="symptom-chip" data-symptom="fever" tabindex="0" role="button" aria-pressed="false">
+            <i class="fas fa-thermometer-half"></i>Fever
+            <span class="symptom-tooltip">High body temperature above normal range</span>
+          </div>
+          <div class="symptom-chip" data-symptom="fatigue" tabindex="0" role="button" aria-pressed="false">
+            <i class="fas fa-bed"></i>Fatigue
+            <span class="symptom-tooltip">Extreme tiredness or lack of energy</span>
+          </div>
+          <div class="symptom-chip" data-symptom="body_aches" tabindex="0" role="button" aria-pressed="false">
+            <i class="fas fa-user-injured"></i>Body Aches
+            <span class="symptom-tooltip">Pain or soreness in muscles and joints</span>
+          </div>
+          <div class="symptom-chip" data-symptom="chills" tabindex="0" role="button" aria-pressed="false">
+            <i class="fas fa-snowflake"></i>Chills
+            <span class="symptom-tooltip">Feeling of coldness with shivering</span>
+          </div>
+          <div class="symptom-chip" data-symptom="weakness" tabindex="0" role="button" aria-pressed="false">
+            <i class="fas fa-battery-quarter"></i>Weakness
+            <span class="symptom-tooltip">Lack of physical strength or energy</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Respiratory Symptoms -->
+      <div class="category-section">
+        <div class="category-header">
+          <i class="fas fa-lungs"></i>
+      <h3>Respiratory Symptoms</h3>
+        </div>
+        <div class="category-symptoms">
+          <div class="symptom-chip" data-symptom="cough">
+            <i class="fas fa-head-side-cough"></i>Cough
+          </div>
+          <div class="symptom-chip" data-symptom="shortness_of_breath">
+            <i class="fas fa-lungs"></i>Shortness of Breath
+          </div>
+          <div class="symptom-chip" data-symptom="sore_throat">
+            <i class="fas fa-head-side-mask"></i>Sore Throat
+          </div>
+          <div class="symptom-chip" data-symptom="runny_nose">
+            <i class="fas fa-nose"></i>Runny Nose
+          </div>
+          <div class="symptom-chip" data-symptom="congestion">
+            <i class="fas fa-head-side-virus"></i>Congestion
+          </div>
+      </div>
+    </div>
+
+      <!-- Digestive Symptoms -->
+      <div class="category-section">
+        <div class="category-header">
+          <i class="fas fa-stomach"></i>
+      <h3>Digestive Symptoms</h3>
+        </div>
+        <div class="category-symptoms">
+          <div class="symptom-chip" data-symptom="nausea">
+            <i class="fas fa-face-dizzy"></i>Nausea
+          </div>
+          <div class="symptom-chip" data-symptom="vomiting">
+            <i class="fas fa-face-frown"></i>Vomiting
+          </div>
+          <div class="symptom-chip" data-symptom="diarrhea">
+            <i class="fas fa-toilet"></i>Diarrhea
+          </div>
+          <div class="symptom-chip" data-symptom="stomach_pain">
+            <i class="fas fa-stomach"></i>Stomach Pain
+          </div>
+          <div class="symptom-chip" data-symptom="loss_of_appetite">
+            <i class="fas fa-utensils"></i>Loss of Appetite
+          </div>
+      </div>
+    </div>
+
+      <!-- Neurological Symptoms -->
+      <div class="category-section">
+        <div class="category-header">
+          <i class="fas fa-brain"></i>
+          <h3>Neurological Symptoms</h3>
+      </div>
+        <div class="category-symptoms">
+          <div class="symptom-chip" data-symptom="headache">
+            <i class="fas fa-head-side-virus"></i>Headache
+          </div>
+          <div class="symptom-chip" data-symptom="dizziness">
+            <i class="fas fa-sync-alt"></i>Dizziness
+          </div>
+          <div class="symptom-chip" data-symptom="confusion">
+            <i class="fas fa-question-circle"></i>Confusion
+          </div>
+          <div class="symptom-chip" data-symptom="memory_issues">
+            <i class="fas fa-brain"></i>Memory Issues
+          </div>
+          <div class="symptom-chip" data-symptom="sleep_problems">
+            <i class="fas fa-moon"></i>Sleep Problems
+          </div>
+    </div>
+  </div>
+
+      <!-- Skin Symptoms -->
+      <div class="category-section">
+        <div class="category-header">
+          <i class="fas fa-allergies"></i>
+          <h3>Skin & Allergies</h3>
+  </div>
+        <div class="category-symptoms">
+          <div class="symptom-chip" data-symptom="skin_rash">
+            <i class="fas fa-allergies"></i>Skin Rash
+          </div>
+          <div class="symptom-chip" data-symptom="itching">
+            <i class="fas fa-hand-paper"></i>Itching
+          </div>
+          <div class="symptom-chip" data-symptom="skin_discoloration">
+            <i class="fas fa-paint-brush"></i>Skin Discoloration
+          </div>
+          <div class="symptom-chip" data-symptom="swelling">
+            <i class="fas fa-expand"></i>Swelling
+          </div>
+          <div class="symptom-chip" data-symptom="hives">
+            <i class="fas fa-dot-circle"></i>Hives
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="severity-section">
+    <div class="severity-header">
+      <h3>Symptom Severity</h3>
+      <p>How severe are your symptoms? <span class="info-tooltip" tabindex="0"><i class="fas fa-question-circle"></i><span class="tooltip-text">Select the option that best describes how much your symptoms affect your daily life.</span></span></p>
+    </div>
+    <div class="severity-options">
+      <div class="severity-option" data-severity="mild">
+        <i class="fas fa-feather-alt"></i>
+        <h4>Mild</h4>
+        <p>Noticeable but not interfering with daily activities</p>
+      </div>
+      <div class="severity-option" data-severity="moderate">
+        <i class="fas fa-thermometer-half"></i>
+        <h4>Moderate</h4>
+        <p>Affecting daily activities but manageable</p>
+      </div>
+      <div class="severity-option" data-severity="severe">
+        <i class="fas fa-exclamation-triangle"></i>
+        <h4>Severe</h4>
+        <p>Significantly impacting daily life and well-being</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="selected-symptoms-section">
+    <div class="selected-symptoms-header">
+      <h3>Selected Symptoms <span id="symptom-count">(0)</span></h3>
+      <button class="clear-all-btn" id="clear-symptoms" aria-label="Clear all selected symptoms">Clear All</button>
+    </div>
+    <div class="instructions-card">
+      <i class="fas fa-check-circle"></i>
+      <p>Your selected symptoms will appear here. You can remove individual symptoms by clicking the × button, or clear all selections with the "Clear All" button above.</p>
+    </div>
+    <div class="selected-symptoms-list" id="selected-symptoms-list" aria-live="polite">
+      <!-- Selected symptoms will be added here dynamically -->
+      <p id="no-symptoms-message">No symptoms selected yet. Click on symptoms above to add them to your list.</p>
+    </div>
+    </div>
+
+  <button class="get-advice-btn" id="get-advice-btn" disabled aria-disabled="true">
+    Get Health Advice
+  </button>
+
+  <div class="advice-section" id="advice-section">
+    <div class="advice-card">
+      <h4><i class="fas fa-first-aid"></i> Immediate Actions</h4>
+      <ul id="immediate-actions"></ul>
+    </div>
+
+    <div class="advice-card">
+      <h4><i class="fas fa-home"></i> Home Care</h4>
+      <ul id="home-care"></ul>
+    </div>
+
+    <div class="advice-card">
+      <h4><i class="fas fa-user-md"></i> When to Seek Medical Help</h4>
+      <ul id="medical-advice"></ul>
+    </div>
+
+    <div class="advice-card">
+      <h4><i class="fas fa-book-medical"></i> Additional Resources</h4>
+      <div class="resources-grid" id="resources-grid"></div>
+  </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block additional_scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+  const symptomChips = document.querySelectorAll('.symptom-chip');
+  const severityOptions = document.querySelectorAll('.severity-option');
+    const selectedSymptomsList = document.getElementById('selected-symptoms-list');
+  const clearSymptomsBtn = document.getElementById('clear-symptoms');
+    const getAdviceBtn = document.getElementById('get-advice-btn');
+  const adviceSection = document.getElementById('advice-section');
+  const noSymptomsMessage = document.getElementById('no-symptoms-message');
+  const symptomCountDisplay = document.getElementById('symptom-count');
+  
+  let selectedSymptoms = new Set();
+  let currentSeverity = 'moderate';
+
+  // Initialize moderate severity as selected
+  document.querySelector('.severity-option[data-severity="moderate"]').classList.add('selected');
+  document.querySelector('.severity-option[data-severity="moderate"]').setAttribute('aria-pressed', 'true');
+
+  // Add keyboard accessibility for symptom chips
+  symptomChips.forEach(chip => {
+    chip.addEventListener('click', toggleSymptom);
+    chip.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        toggleSymptom.call(this);
+      }
+    });
+  });
+
+  function toggleSymptom() {
+        const symptom = this.dataset.symptom;
+    
+        if (this.classList.contains('selected')) {
+          this.classList.remove('selected');
+      this.setAttribute('aria-pressed', 'false');
+          selectedSymptoms.delete(symptom);
+        } else {
+          this.classList.add('selected');
+      this.setAttribute('aria-pressed', 'true');
+      selectedSymptoms.add(symptom);
+      
+      // Add a subtle animation
+      this.animate([
+        { transform: 'scale(0.95)' },
+        { transform: 'scale(1.05)' },
+        { transform: 'scale(1)' }
+      ], {
+        duration: 300,
+        easing: 'ease-in-out'
+      });
+    }
+    
+        updateSelectedSymptomsList();
+        updateGetAdviceButton();
+  }
+
+  // Add keyboard accessibility for severity options
+  severityOptions.forEach(option => {
+    option.setAttribute('role', 'button');
+    option.setAttribute('tabindex', '0');
+    option.setAttribute('aria-pressed', 'false');
+    
+    option.addEventListener('click', selectSeverity);
+    option.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        selectSeverity.call(this);
+      }
+      });
+    });
+
+  function selectSeverity() {
+    severityOptions.forEach(opt => {
+      opt.classList.remove('selected');
+      opt.setAttribute('aria-pressed', 'false');
+    });
+    this.classList.add('selected');
+    this.setAttribute('aria-pressed', 'true');
+    currentSeverity = this.dataset.severity;
+    
+    // Add a subtle animation
+    this.animate([
+      { transform: 'translateY(0)' },
+      { transform: 'translateY(-5px)' },
+      { transform: 'translateY(0)' }
+    ], {
+      duration: 300,
+      easing: 'ease-in-out'
+    });
+  }
+
+  // Clear all symptoms
+  clearSymptomsBtn.addEventListener('click', clearAllSymptoms);
+
+  function clearAllSymptoms() {
+    selectedSymptoms.clear();
+    symptomChips.forEach(chip => {
+      chip.classList.remove('selected');
+      chip.setAttribute('aria-pressed', 'false');
+    });
+    updateSelectedSymptomsList();
+    updateGetAdviceButton();
+  }
+
+    function updateSelectedSymptomsList() {
+      selectedSymptomsList.innerHTML = '';
+    symptomCountDisplay.textContent = `(${selectedSymptoms.size})`;
+    
+    if (selectedSymptoms.size === 0) {
+      const noSymptomsMsg = document.createElement('p');
+      noSymptomsMsg.id = 'no-symptoms-message';
+      noSymptomsMsg.textContent = 'No symptoms selected yet. Click on symptoms above to add them to your list.';
+      selectedSymptomsList.appendChild(noSymptomsMsg);
+      return;
+    }
+    
+    selectedSymptoms.forEach(symptom => {
+      const tag = document.createElement('div');
+      tag.className = 'selected-symptom-tag';
+      tag.innerHTML = `
+          ${symptom.replace(/_/g, ' ')}
+        <span class="remove-symptom" data-symptom="${symptom}" role="button" tabindex="0" aria-label="Remove ${symptom.replace(/_/g, ' ')}">×</span>
+      `;
+      selectedSymptomsList.appendChild(tag);
+
+      // Add remove functionality with keyboard support
+      const removeBtn = tag.querySelector('.remove-symptom');
+      removeBtn.addEventListener('click', removeSymptom);
+      removeBtn.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          removeSymptom.call(this, e);
+        }
+      });
+    });
+  }
+
+  function removeSymptom(e) {
+    e.stopPropagation();
+    const symptomToRemove = this.dataset.symptom;
+    selectedSymptoms.delete(symptomToRemove);
+    
+    const symptomChip = document.querySelector(`.symptom-chip[data-symptom="${symptomToRemove}"]`);
+    symptomChip.classList.remove('selected');
+    symptomChip.setAttribute('aria-pressed', 'false');
+    
+          updateSelectedSymptomsList();
+          updateGetAdviceButton();
+    }
+
+    function updateGetAdviceButton() {
+    const isEmpty = selectedSymptoms.size === 0;
+    getAdviceBtn.disabled = isEmpty;
+    getAdviceBtn.setAttribute('aria-disabled', isEmpty.toString());
+    
+    if (!isEmpty) {
+      getAdviceBtn.classList.add('active');
+    } else {
+      getAdviceBtn.classList.remove('active');
+    }
+  }
+
+  // Get advice button click handler with improved feedback
+  getAdviceBtn.addEventListener('click', getHealthAdvice);
+
+  async function getHealthAdvice() {
+    try {
+      // Show loading state with better visual feedback
+      getAdviceBtn.disabled = true;
+      getAdviceBtn.setAttribute('aria-disabled', 'true');
+      getAdviceBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Getting Advice...';
+      getAdviceBtn.classList.add('loading');
+
+      // Show loading message in advice section
+      if (!adviceSection.classList.contains('visible')) {
+        adviceSection.classList.add('visible');
+        adviceSection.innerHTML = `
+          <div class="loading-indicator">
+            <div class="spinner"></div>
+            <p>Analyzing your symptoms...</p>
+          </div>
+        `;
+        adviceSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+
+      // Add a slight delay to show the loading state for demo purposes
+      // Remove this in production
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      const response = await fetch('/get_health_advice', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({
+          symptoms: Array.from(selectedSymptoms),
+          severity: currentSeverity
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const advice = await response.json();
+      
+      // Replace the loading indicator with actual advice content
+      adviceSection.innerHTML = `
+        <div class="advice-card">
+          <h4><i class="fas fa-first-aid"></i> Immediate Actions</h4>
+          <ul id="immediate-actions">${
+            advice.immediate_actions
+              ? advice.immediate_actions.map(action => `<li>${action}</li>`).join('')
+              : '<li>No immediate actions required.</li>'
+          }</ul>
+        </div>
+
+        <div class="advice-card">
+          <h4><i class="fas fa-home"></i> Home Care</h4>
+          <ul id="home-care">${
+            advice.home_care
+              ? advice.home_care.map(care => `<li>${care}</li>`).join('')
+              : '<li>No specific home care recommendations.</li>'
+          }</ul>
+        </div>
+
+        <div class="advice-card">
+          <h4><i class="fas fa-user-md"></i> When to Seek Medical Help</h4>
+          <ul id="medical-advice">${
+            advice.medical_advice
+              ? advice.medical_advice.map(advice => `<li>${advice}</li>`).join('')
+              : '<li>No specific medical advice at this time.</li>'
+          }</ul>
+        </div>
+
+        <div class="advice-card">
+          <h4><i class="fas fa-book-medical"></i> Additional Resources</h4>
+          <div class="resources-grid" id="resources-grid">${
+            advice.resources
+              ? advice.resources.map(resource => `
+                  <div class="resource-card">
+                    <h5>${resource.title}</h5>
+                    <p>${resource.description}</p>
+                    <a href="${resource.url}" class="resource-link" target="_blank" rel="noopener noreferrer">
+                      Learn More <i class="fas fa-external-link-alt"></i>
+                    </a>
+                  </div>
+                `).join('')
+              : '<div class="resource-card"><p>No additional resources available.</p></div>'
+          }</div>
+        </div>
+        
+        <button class="print-advice-btn" id="print-advice-btn">
+          <i class="fas fa-print"></i> Print Advice
+        </button>
+        
+        <div class="disclaimer">
+          <p><i class="fas fa-exclamation-circle"></i> <strong>Disclaimer:</strong> This advice is generated based on your symptoms and is not a substitute for professional medical diagnosis. Always consult with a healthcare provider for serious health concerns.</p>
+        </div>
+      `;
+
+      // Add print functionality
+      document.getElementById('print-advice-btn').addEventListener('click', function() {
+        window.print();
+      });
+
+      // Show advice section with animation
+      adviceSection.classList.add('visible');
+      adviceSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    } catch (error) {
+      console.error('Error getting advice:', error);
+      // Show user-friendly error message
+      adviceSection.innerHTML = `
+        <div class="error-message">
+          <div class="alert alert-danger" role="alert">
+            <i class="fas fa-exclamation-circle"></i>
+            <div>
+              <h4>Sorry, there was an error</h4>
+              <p>We couldn't process your health advice request. Please try again later or refresh the page.</p>
+              <button class="retry-btn" id="retry-btn">Try Again</button>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      document.getElementById('retry-btn').addEventListener('click', getHealthAdvice);
+      
+      adviceSection.classList.add('visible');
+    } finally {
+      // Reset button state
+      getAdviceBtn.disabled = false;
+      getAdviceBtn.setAttribute('aria-disabled', 'false');
+      getAdviceBtn.innerHTML = 'Get Health Advice';
+      getAdviceBtn.classList.remove('loading');
+    }
+  }
+
+  // Add these additional styles
+  const style = document.createElement('style');
+  style.textContent = `
+    .loading-indicator {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem;
+      text-align: center;
+    }
+    
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 5px solid var(--primary-light);
+      border-top: 5px solid var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 1rem;
+    }
+    
+    .get-advice-btn.loading {
+      position: relative;
+      background: linear-gradient(90deg, var(--primary), var(--secondary), var(--primary));
+      background-size: 200% 100%;
+      animation: gradient-shift 2s infinite;
+    }
+    
+    .get-advice-btn.active {
+      animation: pulse 2s infinite;
+    }
+    
+    .print-advice-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      margin: 2rem 0;
+      padding: 0.75rem 1.5rem;
+      background: var(--text-dark);
+      color: var(--white);
+      border: none;
+      border-radius: var(--border-radius);
+      font-size: 1rem;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    
+    .print-advice-btn:hover {
+      background: var(--primary);
+      transform: translateY(-2px);
+    }
+    
+    .disclaimer {
+      margin-top: 2rem;
+      padding: 1rem;
+      border-top: 1px solid var(--primary-light);
+      font-size: 0.9rem;
+      color: var(--text-light);
+    }
+    
+    .error-message .alert {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      background: #FEE2E2;
+      border: 1px solid #F87171;
+      border-radius: var(--border-radius);
+      padding: 1.5rem;
+      color: #991B1B;
+    }
+    
+    .error-message i {
+      font-size: 2rem;
+    }
+    
+    .retry-btn {
+      margin-top: 1rem;
+      padding: 0.5rem 1rem;
+      background: #991B1B;
+      color: white;
+      border: none;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+    }
+    
+    .retry-btn:hover {
+      background: #7F1D1D;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    @keyframes gradient-shift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      
+      .advice-section, .advice-section * {
+        visibility: visible;
+      }
+      
+      .print-advice-btn, .disclaimer {
+        display: none;
+      }
+      
+      .advice-section {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+      }
+    }
+  `;
+  document.head.appendChild(style);
+
+  // Initial button state
+  updateGetAdviceButton();
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login - Health Assistant</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-light: rgba(79, 70, 229, 0.1);
+      --primary-dark: #4338ca;
+      --secondary: #10b981;
+      --secondary-light: rgba(16, 185, 129, 0.1);
+      --accent: #f59e0b;
+      --accent-light: rgba(245, 158, 11, 0.1);
+      --text-dark: #1f2937;
+      --text-light: #6b7280;
+      --background: #f3f4f6;
+      --white: #ffffff;
+      --success: #059669;
+      --warning: #d97706;
+      --danger: #dc2626;
+      --border-radius: 10px;
+      --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+      --shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+      --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.1);
+      --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      --glass-bg: rgba(255, 255, 255, 0.9);
+      --glass-border: rgba(255, 255, 255, 0.2);
+      --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+    }
+    
+    body {
+      background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    .auth-container {
+      max-width: 450px;
+      width: 100%;
+      padding: 40px;
+      background-color: var(--glass-bg);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--border-radius);
+      box-shadow: var(--glass-shadow);
+      animation: fadeIn 0.5s ease-in-out;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .auth-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    .auth-header img {
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow);
+      border: 3px solid var(--white);
+      padding: 3px;
+    }
+    
+    .auth-header h1 {
+      color: var(--primary);
+      font-size: 2rem;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+    
+    .auth-header p {
+      color: var(--text-light);
+      font-size: 1.05rem;
+      margin-bottom: 15px;
+    }
+    
+    .admin-badge {
+      background-color: var(--accent);
+      color: white;
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      display: inline-block;
+      letter-spacing: 0.5px;
+      box-shadow: var(--shadow-sm);
+    }
+    
+    .form-group {
+      margin-bottom: 25px;
+      position: relative;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: 600;
+      color: var(--text-dark);
+      font-size: 1rem;
+    }
+    
+    .form-group input {
+      width: 100%;
+      padding: 15px 45px 15px 15px;
+      border: 1px solid var(--glass-border);
+      border-radius: var(--border-radius);
+      font-size: 1rem;
+      transition: var(--transition);
+      background-color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .form-group input:focus {
+      border-color: var(--primary);
+      outline: none;
+      box-shadow: 0 0 0 3px var(--primary-light);
+      background-color: var(--white);
+    }
+    
+    .form-group i {
+      position: absolute;
+      right: 15px;
+      top: 46px;
+      color: var(--text-light);
+    }
+    
+    .auth-btn {
+      width: 100%;
+      padding: 15px;
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      border-radius: var(--border-radius);
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      box-shadow: var(--shadow);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .auth-btn:hover {
+      background-color: var(--primary-dark);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+    
+    .auth-btn:active {
+      transform: translateY(0);
+    }
+    
+    .auth-footer {
+      margin-top: 30px;
+      text-align: center;
+      color: var(--text-light);
+      font-size: 1rem;
+    }
+    
+    .auth-footer a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    
+    .auth-footer a:hover {
+      color: var(--primary-dark);
+      text-decoration: underline;
+    }
+    
+    .flash-message {
+      padding: 15px;
+      background-color: rgba(220, 38, 38, 0.1);
+      color: var(--danger);
+      border-radius: var(--border-radius);
+      margin-bottom: 25px;
+      text-align: center;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: var(--shadow-sm);
+      border-left: 4px solid var(--danger);
+      animation: shake 0.5s linear;
+    }
+    
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+      20%, 40%, 60%, 80% { transform: translateX(5px); }
+    }
+    
+    .security-notice {
+      margin-top: 25px;
+      padding: 12px 15px;
+      background-color: var(--glass-bg);
+      border-left: 4px solid var(--primary);
+      border-radius: var(--border-radius);
+      font-size: 0.85rem;
+      color: var(--text-light);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .security-notice i {
+      color: var(--primary);
+      font-size: 1.2rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="auth-container">
+    <div class="auth-header">
+      <img src="{{ url_for('static', filename='images/logo1.jpg') }}" alt="Health Assistant Logo">
+      <h1>Admin Portal</h1>
+      <p>Secure login for administrative access</p>
+      <span class="admin-badge">Restricted Access</span>
+    </div>
+    
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="flash-message">
+          <i class="fas fa-exclamation-circle"></i>
+          {{ messages[0] }}
+        </div>
+      {% endif %}
+    {% endwith %}
+    
+    <form method="POST" action="{{ url_for('login') }}">
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" required autocomplete="off">
+        <i class="fas fa-user"></i>
+      </div>
+      
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required>
+        <i class="fas fa-lock"></i>
+      </div>
+      
+      <button type="submit" class="auth-btn">
+        <i class="fas fa-sign-in-alt"></i>
+        Secure Login
+      </button>
+    </form>
+    
+    <div class="security-notice">
+      <i class="fas fa-shield-alt"></i>
+      <span>This is a secure administrative area. Unauthorized access attempts will be logged and reported.</span>
+    </div>
+    
+    <div class="auth-footer">
+      <p><a href="{{ url_for('home') }}"><i class="fas fa-arrow-left"></i> Return to Home</a></p>
+    </div>
+  </div>
+</body>
+</html> 

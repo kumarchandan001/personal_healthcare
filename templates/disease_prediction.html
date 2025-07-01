@@ -1,0 +1,1136 @@
+{% extends "includes/layout.html" %}
+
+{% block title %}Disease Prediction{% endblock %}
+
+{% block additional_styles %}
+<style>
+  /* Main container styles */
+  .page-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  /* Card grid layout */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 30px;
+    margin: 30px 0;
+  }
+  
+  /* Card styling */
+  .symptom-card {
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    background-color: #ffffff;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .symptom-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  }
+  
+  .card-header {
+    background-color: #2a9d8f;
+    color: white;
+    padding: 15px 20px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .card-body {
+    padding: 20px;
+    max-height: 350px;
+    overflow-y: auto;
+  }
+  
+  /* Scroll styling */
+  .card-body::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .card-body::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+  }
+  
+  .card-body::-webkit-scrollbar-thumb {
+    background: #88d4cb;
+    border-radius: 10px;
+  }
+  
+  .card-body::-webkit-scrollbar-thumb:hover {
+    background: #2a9d8f;
+  }
+  
+  /* Symptom item styling */
+  .symptom-item {
+    margin: 10px 0;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  
+  .symptom-item:last-child {
+    border-bottom: none;
+  }
+  
+  .symptom-item label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 0.95rem;
+    color: #333;
+  }
+  
+  .symptom-item input[type="checkbox"] {
+    margin-right: 10px;
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
+    accent-color: #2a9d8f;
+  }
+  
+  /* Card information footer */
+  .card-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: #f8f9fa;
+    border-top: 1px solid #eee;
+    color: #6c757d;
+    font-size: 0.85rem;
+  }
+  
+  .select-all-btn {
+    background-color: #2a9d8f;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: background-color 0.3s;
+  }
+  
+  .select-all-btn:hover {
+    background-color: #238177;
+  }
+  
+  /* Style for "Select all that apply" text */
+  .select-all-text {
+    color: #2a9d8f;
+    cursor: pointer;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    background-color: rgba(42, 157, 143, 0.1);
+    border: 1px solid rgba(42, 157, 143, 0.4);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  }
+  
+  .select-all-text:before {
+    content: '✓';
+    margin-right: 6px;
+    font-weight: bold;
+  }
+  
+  .select-all-text:hover {
+    background-color: rgba(42, 157, 143, 0.2);
+    color: #1e796e;
+    border: 1px solid rgba(42, 157, 143, 0.6);
+    box-shadow: 0 2px 6px rgba(42, 157, 143, 0.2);
+    transform: translateY(-1px);
+  }
+  
+  .symptom-count {
+    display: flex;
+    align-items: center;
+  }
+  
+  /* Selected symptoms and actions section */
+  .selected-symptoms {
+    margin-top: 30px;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  }
+  
+  .selected-symptoms h3 {
+    margin-top: 0;
+    color: #264653;
+    font-size: 1.3rem;
+    margin-bottom: 15px;
+  }
+  
+  .selected-symptoms ul {
+    padding-left: 20px;
+    max-height: 150px;
+    overflow-y: auto;
+    columns: 3;
+  }
+  
+  .selected-symptoms li {
+    margin-bottom: 8px;
+    color: #2a9d8f;
+  }
+  
+  .selected-count {
+    font-weight: bold;
+    color: #e76f51;
+  }
+  
+  /* Action buttons */
+  .prediction-actions {
+    margin-top: 25px;
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+  }
+  
+  .btn {
+    padding: 12px 25px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    border: none;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.9rem;
+  }
+  
+  .btn-primary {
+    background-color: #2a9d8f;
+    color: white;
+  }
+  
+  .btn-primary:hover {
+    background-color: #238177;
+  }
+  
+  .btn-secondary {
+    background-color: #e9ecef;
+    color: #495057;
+  }
+  
+  .btn-secondary:hover {
+    background-color: #dee2e6;
+  }
+  
+  /* Error message styling */
+  .alert {
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+    font-weight: 500;
+  }
+  
+  .alert-warning {
+    background-color: #fff3cd;
+    color: #856404;
+    border-left: 4px solid #ffeeba;
+  }
+  
+  .alert-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+    border-left: 4px solid #f5c6cb;
+  }
+  
+  /* Prediction Result Styling */
+  .prediction-box {
+    margin-top: 30px;
+    padding: 25px;
+    border-radius: 10px;
+    background-color: #edf6f9;
+    border: 1px solid #a2d2ff;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  }
+  
+  .prediction-box h3 {
+    color: #264653;
+    margin-top: 0;
+    font-size: 1.4rem;
+    margin-bottom: 15px;
+  }
+  
+  .predicted-disease {
+    font-size: 1.7rem;
+    font-weight: bold;
+    color: #e76f51;
+    margin: 20px 0;
+    padding: 15px;
+    background-color: rgba(231, 111, 81, 0.1);
+    border-radius: 8px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .predicted-disease .confidence {
+    font-size: 1rem;
+    background-color: #e76f51;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 20px;
+    margin-left: 15px;
+  }
+  
+  .disease-description {
+    margin: 15px 0;
+    line-height: 1.6;
+    color: #444;
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 4px solid #264653;
+  }
+  
+  .key-symptoms {
+    margin: 20px 0;
+  }
+  
+  .key-symptoms h4 {
+    color: #264653;
+    margin-bottom: 10px;
+  }
+  
+  .symptom-tag {
+    display: inline-block;
+    padding: 6px 12px;
+    margin: 5px;
+    background-color: #2a9d8f;
+    color: white;
+    border-radius: 20px;
+    font-size: 0.9rem;
+  }
+  
+  .precautions-list {
+    margin: 20px 0;
+    background-color: #fff8f0;
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 4px solid #e9c46a;
+  }
+  
+  .precautions-list h4 {
+    color: #264653;
+    margin-bottom: 10px;
+  }
+  
+  .precautions-list ul {
+    padding-left: 20px;
+    list-style-type: circle;
+  }
+  
+  .precautions-list li {
+    margin-bottom: 8px;
+    color: #444;
+  }
+  
+  .loader {
+    border: 5px solid #f3f3f3;
+    border-radius: 50%;
+    border-top: 5px solid #2a9d8f;
+    width: 40px;
+    height: 40px;
+    animation: spin 2s linear infinite;
+    margin: 20px auto;
+    display: none;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  .disclaimer {
+    font-size: 0.9rem;
+    color: #6c757d;
+    font-style: italic;
+    margin-top: 20px;
+    line-height: 1.5;
+  }
+  
+  /* Page header */
+  .page-header {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+  
+  .page-header h2 {
+    color: #264653;
+    font-size: 2rem;
+    margin-bottom: 10px;
+  }
+  
+  .page-header p {
+    color: #6c757d;
+    max-width: 700px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+  
+  /* Add additional CSS for the select-all-text */
+  .card-info span.select-all-text {
+    cursor: pointer;
+    color: #2a9d8f;
+    font-weight: 600;
+    transition: color 0.3s;
+    display: flex;
+    align-items: center;
+  }
+  
+  .card-info span.select-all-text:hover {
+    color: #238177;
+  }
+  
+  .card-info span.select-all-text::before {
+    content: '✓';
+    margin-right: 5px;
+    font-size: 0.9rem;
+  }
+  
+  /* Add a hover effect to the card-info */
+  .card-info:hover {
+    background-color: #f1f8f7;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Disease Prediction Section -->
+<section id="disease-prediction" class="page-container">
+  <div class="page-header">
+    <h2>Disease Prediction</h2>
+    <p>Select symptoms from the categories below to get a prediction based on your symptoms. Our AI system will analyze the selected symptoms and suggest possible conditions.</p>
+  </div>
+  
+  <form id="symptomForm">
+    <div class="cards-grid">
+      <!-- General Symptoms Card -->
+      <div class="symptom-card">
+        <div class="card-header">
+          General Symptoms
+          <button type="button" class="select-all-btn" data-category="general">Select All</button>
+        </div>
+        <div class="card-body">
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="high_fever">
+              High Fever
+            </label>
+          </div>
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="mild_fever">
+              Mild Fever
+            </label>
+          </div>
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="chills">
+              Chills
+            </label>
+          </div>
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="fatigue">
+              Fatigue
+            </label>
+          </div>
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="muscle_weakness">
+              Weakness
+            </label>
+          </div>
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="malaise">
+              Malaise
+            </label>
+          </div>
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="lethargy">
+              Lethargy
+            </label>
+          </div>
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="sweating">
+              Sweating
+            </label>
+          </div>
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="dehydration">
+              Dehydration
+            </label>
+          </div>
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="weight_loss">
+              Weight Loss
+            </label>
+          </div>
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="weight_gain">
+              Weight Gain
+            </label>
+          </div>
+        </div>
+        <div class="card-info">
+          <span class="symptom-count">12 symptoms</span>
+          <span class="select-all-text" data-category="general">Select all that apply</span>
+        </div>
+      </div>
+      
+      <!-- Respiratory Symptoms Card -->
+      <div class="symptom-card">
+        <div class="card-header">
+          Respiratory Symptoms
+          <button type="button" class="select-all-btn" data-category="respiratory">Select All</button>
+        </div>
+        <div class="card-body">
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="cough">
+              Cough
+            </label>
+          </div>
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="breathlessness">
+              Breathlessness
+            </label>
+          </div>
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="phlegm">
+              Phlegm
+            </label>
+          </div>
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="rusty_sputum">
+              Rusty Sputum
+            </label>
+          </div>
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="blood_in_sputum">
+              Blood in Sputum
+            </label>
+          </div>
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="chest_pain">
+              Chest Pain
+            </label>
+          </div>
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="continuous_sneezing">
+              Continuous Sneezing
+            </label>
+          </div>
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="runny_nose">
+              Runny Nose
+            </label>
+          </div>
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="congestion">
+              Congestion
+            </label>
+          </div>
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="throat_irritation">
+              Throat Irritation
+            </label>
+          </div>
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="sinus_pressure">
+              Sinus Pressure
+            </label>
+          </div>
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="loss_of_smell">
+              Loss of Smell
+            </label>
+          </div>
+        </div>
+        <div class="card-info">
+          <span class="symptom-count">12 symptoms</span>
+          <span class="select-all-text" data-category="respiratory">Select all that apply</span>
+        </div>
+      </div>
+      
+      <!-- Gastrointestinal Symptoms Card -->
+      <div class="symptom-card">
+        <div class="card-header">
+          Gastrointestinal Symptoms
+          <button type="button" class="select-all-btn" data-category="gastrointestinal">Select All</button>
+        </div>
+        <div class="card-body">
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="stomach_pain">
+              Stomach Pain
+            </label>
+          </div>
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="abdominal_pain">
+              Abdominal Pain
+            </label>
+          </div>
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="vomiting">
+              Vomiting
+            </label>
+          </div>
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="nausea">
+              Nausea
+            </label>
+          </div>
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="diarrhoea">
+              Diarrhea
+            </label>
+          </div>
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="constipation">
+              Constipation
+            </label>
+          </div>
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="indigestion">
+              Indigestion
+            </label>
+          </div>
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="loss_of_appetite">
+              Loss of Appetite
+            </label>
+          </div>
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="excessive_hunger">
+              Excessive Hunger
+            </label>
+          </div>
+        </div>
+        <div class="card-info">
+          <span class="symptom-count">9+ symptoms</span>
+          <span class="select-all-text" data-category="gastrointestinal">Select all that apply</span>
+        </div>
+      </div>
+      
+      <!-- Skin Symptoms Card -->
+      <div class="symptom-card">
+        <div class="card-header">
+          Skin Symptoms
+          <button type="button" class="select-all-btn" data-category="skin">Select All</button>
+        </div>
+        <div class="card-body">
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="itching">
+              Itching
+            </label>
+          </div>
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="skin_rash">
+              Skin Rash
+            </label>
+          </div>
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="nodal_skin_eruptions">
+              Nodal Skin Eruptions
+            </label>
+          </div>
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="dischromic_patches">
+              Dischromic Patches
+            </label>
+          </div>
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="yellowish_skin">
+              Yellowish Skin
+            </label>
+          </div>
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="bruising">
+              Bruising
+            </label>
+          </div>
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="blister">
+              Blister
+            </label>
+          </div>
+        </div>
+        <div class="card-info">
+          <span class="symptom-count">7+ symptoms</span>
+          <span class="select-all-text" data-category="skin">Select all that apply</span>
+        </div>
+      </div>
+      
+      <!-- Neurological Symptoms Card -->
+      <div class="symptom-card">
+        <div class="card-header">
+          Neurological Symptoms
+          <button type="button" class="select-all-btn" data-category="neurological">Select All</button>
+        </div>
+        <div class="card-body">
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="headache">
+              Headache
+            </label>
+          </div>
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="dizziness">
+              Dizziness
+            </label>
+          </div>
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="loss_of_balance">
+              Loss of Balance
+            </label>
+          </div>
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="lack_of_concentration">
+              Lack of Concentration
+            </label>
+          </div>
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="altered_sensorium">
+              Altered Sensorium
+            </label>
+          </div>
+        </div>
+        <div class="card-info">
+          <span class="symptom-count">5+ symptoms</span>
+          <span class="select-all-text" data-category="neurological">Select all that apply</span>
+        </div>
+      </div>
+      
+      <!-- Psychological Symptoms Card -->
+      <div class="symptom-card">
+        <div class="card-header">
+          Psychological Symptoms
+          <button type="button" class="select-all-btn" data-category="psychological">Select All</button>
+        </div>
+        <div class="card-body">
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="anxiety">
+              Anxiety
+            </label>
+          </div>
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="depression">
+              Depression
+            </label>
+          </div>
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="irritability">
+              Irritability
+            </label>
+          </div>
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="mood_swings">
+              Mood Swings
+            </label>
+          </div>
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="restlessness">
+              Restlessness
+            </label>
+          </div>
+        </div>
+        <div class="card-info">
+          <span class="symptom-count">5 symptoms</span>
+          <span class="select-all-text" data-category="psychological">Select all that apply</span>
+        </div>
+      </div>
+      
+      <!-- Musculoskeletal Symptoms Card -->
+      <div class="symptom-card">
+        <div class="card-header">
+          Musculoskeletal Symptoms
+          <button type="button" class="select-all-btn" data-category="musculoskeletal">Select All</button>
+        </div>
+        <div class="card-body">
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="joint_pain">
+              Joint Pain
+            </label>
+          </div>
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="muscle_pain">
+              Muscle Pain
+            </label>
+          </div>
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="muscle_weakness">
+              Muscle Weakness
+            </label>
+          </div>
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="muscle_wasting">
+              Muscle Wasting
+            </label>
+          </div>
+        </div>
+        <div class="card-info">
+          <span class="symptom-count">4+ symptoms</span>
+          <span class="select-all-text" data-category="musculoskeletal">Select all that apply</span>
+        </div>
+      </div>
+      
+      <!-- Urinary Symptoms Card -->
+      <div class="symptom-card">
+        <div class="card-header">
+          Urinary Symptoms
+          <button type="button" class="select-all-btn" data-category="urinary">Select All</button>
+        </div>
+        <div class="card-body">
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="burning_micturition">
+              Burning Micturition
+            </label>
+          </div>
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="spotting_urination">
+              Spotting Urination
+            </label>
+          </div>
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="yellow_urine">
+              Yellow Urine
+            </label>
+          </div>
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="dark_urine">
+              Dark Urine
+            </label>
+          </div>
+        </div>
+        <div class="card-info">
+          <span class="symptom-count">4+ symptoms</span>
+          <span class="select-all-text" data-category="urinary">Select all that apply</span>
+        </div>
+      </div>
+      
+      <!-- Other Symptoms Card -->
+      <div class="symptom-card">
+        <div class="card-header">
+          Other Symptoms
+          <button type="button" class="select-all-btn" data-category="other">Select All</button>
+        </div>
+        <div class="card-body">
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="irregular_sugar_level">
+              Irregular Sugar Level
+            </label>
+          </div>
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="fast_heart_rate">
+              Fast Heart Rate
+            </label>
+          </div>
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="palpitations">
+              Palpitations
+            </label>
+          </div>
+          <div class="symptom-item">
+            <label>
+              <input type="checkbox" name="symptom" value="cold_hands_and_feets">
+              Cold Hands and Feet
+            </label>
+          </div>
+        </div>
+        <div class="card-info">
+          <span class="symptom-count">4+ symptoms</span>
+          <span class="select-all-text" data-category="other">Select all that apply</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Selected Symptoms Summary -->
+    <div class="selected-symptoms">
+      <h3>Selected Symptoms (<span class="selected-count">0</span>)</h3>
+      <ul id="selected-symptoms-list"></ul>
+      
+      <!-- Form Actions -->
+      <div class="prediction-actions">
+        <button type="submit" class="btn btn-primary">Predict Disease</button>
+        <button type="button" class="btn btn-secondary" id="reset-symptoms">Reset</button>
+      </div>
+    </div>
+  </form>
+  
+  <div id="predictionResult"></div>
+</section>
+
+
+
+  {% endblock %}
+
+{% block additional_scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const symptomForm = document.getElementById('symptomForm');
+    const checkboxes = document.querySelectorAll('input[name="symptom"]');
+    const selectedList = document.getElementById('selected-symptoms-list');
+    const selectedCount = document.querySelector('.selected-count');
+    const resetButton = document.getElementById('reset-symptoms');
+    const predictionResult = document.getElementById('predictionResult');
+    const selectAllButtons = document.querySelectorAll('.select-all-btn');
+    const selectAllTexts = document.querySelectorAll('.select-all-text');
+    
+    // Update selected symptoms list
+    function updateSelectedSymptoms() {
+      // Clear the current list
+      selectedList.innerHTML = '';
+      
+      // Get all checked checkboxes
+      const checked = document.querySelectorAll('input[name="symptom"]:checked');
+      
+      // Update count
+      selectedCount.textContent = checked.length;
+      
+      // Add each selected symptom to the list
+      checked.forEach(function(checkbox) {
+        const li = document.createElement('li');
+        li.textContent = checkbox.parentNode.textContent.trim();
+        selectedList.appendChild(li);
+      });
+    }
+    
+    // Select all symptoms in a category
+    function selectAllInCategory(category) {
+      const card = document.querySelector(`.select-all-btn[data-category="${category}"]`).closest('.symptom-card');
+      const categoryCheckboxes = card.querySelectorAll('input[name="symptom"]');
+      
+      categoryCheckboxes.forEach(checkbox => {
+        checkbox.checked = true;
+      });
+      
+      updateSelectedSymptoms();
+    }
+    
+    // Add event listeners to "Select All" buttons
+    selectAllButtons.forEach(button => {
+      button.addEventListener('click', function() {
+        const category = this.getAttribute('data-category');
+        selectAllInCategory(category);
+      });
+    });
+    
+    // Add event listeners to "Select all that apply" text
+    selectAllTexts.forEach(text => {
+      text.addEventListener('click', function() {
+        const category = this.getAttribute('data-category');
+        selectAllInCategory(category);
+      });
+    });
+    
+    // Listen for changes on any checkbox
+    checkboxes.forEach(function(checkbox) {
+      checkbox.addEventListener('change', updateSelectedSymptoms);
+    });
+    
+    // Reset button functionality
+    resetButton.addEventListener('click', function() {
+      checkboxes.forEach(function(checkbox) {
+        checkbox.checked = false;
+      });
+      updateSelectedSymptoms();
+      predictionResult.innerHTML = '';
+    });
+    
+    // Format confidence percentage
+    function formatConfidence(confidence) {
+      return (confidence * 100).toFixed(1) + '%';
+    }
+    
+    // Form submission
+    symptomForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      // Get all checked symptoms
+      const checked = document.querySelectorAll('input[name="symptom"]:checked');
+      
+      if (checked.length === 0) {
+        predictionResult.innerHTML = '<div class="alert alert-warning">Please select at least one symptom.</div>';
+        return;
+      }
+      
+      // Show loading indicator
+      predictionResult.innerHTML = '<div class="loader" style="display: block;"></div>';
+      
+      // Create data object for submission
+      const formData = {};
+      checked.forEach(function(checkbox) {
+        // Use the values exactly as they appear in the dataset
+        formData[checkbox.value] = "1";
+      });
+      
+      console.log('Sending symptoms to prediction API:', formData);
+      
+      // Send AJAX request to backend
+      fetch('/predict', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+      })
+      .then(response => {
+        console.log('Received response status:', response.status);
+        return response.json();
+      })
+      .then(data => {
+        console.log('Prediction response:', data);
+        
+        if (data.predicted_disease) {
+          // Start building result HTML
+          let resultHTML = `
+            <div class="prediction-box">
+              <h3>Disease Prediction</h3>
+              <p>Based on the symptoms provided, our AI suggests:</p>
+              <div class="predicted-disease">
+                ${data.predicted_disease}
+                <span class="confidence">${formatConfidence(data.confidence)}</span>
+              </div>
+          `;
+          
+          // Add description if available
+          if (data.description) {
+            resultHTML += `
+              <div class="disease-description">
+                <p>${data.description}</p>
+              </div>
+            `;
+          }
+          
+          // Add key symptoms if available
+          if (data.top_symptoms && data.top_symptoms.length > 0) {
+            resultHTML += `
+              <div class="key-symptoms">
+                <h4>Key Symptoms</h4>
+                <div>
+            `;
+            
+            data.top_symptoms.forEach(symptom => {
+              resultHTML += `<span class="symptom-tag">${symptom.symptom}</span>`;
+            });
+            
+            resultHTML += `
+                </div>
+              </div>
+            `;
+          }
+          
+          // Add precautions if available
+          if (data.precautions && data.precautions.length > 0) {
+            resultHTML += `
+              <div class="precautions-list">
+                <h4>Precautions & Recommendations</h4>
+                <ul>
+            `;
+            
+            data.precautions.forEach(precaution => {
+              resultHTML += `<li>${precaution}</li>`;
+            });
+            
+            resultHTML += `
+                </ul>
+              </div>
+            `;
+          }
+          
+          // Add disclaimer
+          resultHTML += `
+            <p class="disclaimer">Note: This is only a prediction based on machine learning. Please consult a healthcare professional for an accurate diagnosis and treatment plan.</p>
+            </div>
+          `;
+          
+          predictionResult.innerHTML = resultHTML;
+          
+          // Scroll to result
+          predictionResult.scrollIntoView({ behavior: 'smooth' });
+        } else if (data.error) {
+          predictionResult.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+        }
+      })
+      .catch(error => {
+        console.error('Error during prediction:', error);
+        predictionResult.innerHTML = '<div class="alert alert-danger">An error occurred during prediction. Please try again.</div>';
+      });
+    });
+    
+    // Initialize the selected symptoms count
+    updateSelectedSymptoms();
+  });
+</script>
+{% endblock %}

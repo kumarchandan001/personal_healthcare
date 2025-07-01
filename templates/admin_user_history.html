@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>User History - Admin Panel</title>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-light: rgba(79, 70, 229, 0.1);
+            --primary-dark: #4338ca;
+            --secondary: #0ea5e9;
+            --secondary-light: rgba(14, 165, 233, 0.1);
+            --accent: #f59e0b;
+            --accent-light: rgba(245, 158, 11, 0.1);
+            --danger: #ef4444;
+            --danger-light: rgba(239, 68, 68, 0.1);
+            --success: #10b981;
+            --success-light: rgba(16, 185, 129, 0.1);
+            --white: #ffffff;
+            --text: #1f2937;
+            --text-light: #6b7280;
+            --glass-bg: rgba(255, 255, 255, 0.8);
+            --glass-border: rgba(209, 213, 219, 0.5);
+            --glass-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --border-radius: 8px;
+            --transition: all 0.2s ease-in-out;
+        }
+        
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 0; 
+            padding: 0; 
+            background-color: #f5f5f5;
+            color: var(--text);
+        }
+        
+        .container { 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            padding: 20px; 
+        }
+        
+        header { 
+            background-color: #333; 
+            color: white; 
+            padding: 10px 20px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+        }
+        
+        .header-title { 
+            font-size: 20px; 
+            font-weight: bold; 
+        }
+        
+        nav { 
+            margin-top: 20px; 
+            background-color: white; 
+            padding: 15px; 
+            border-radius: var(--border-radius); 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+        }
+        
+        nav ul { 
+            list-style: none; 
+            padding: 0; 
+            margin: 0; 
+            display: flex; 
+            flex-wrap: wrap; 
+        }
+        
+        nav ul li { 
+            margin-right: 20px; 
+            margin-bottom: 5px; 
+        }
+        
+        nav ul li a { 
+            text-decoration: none; 
+            color: var(--text); 
+            font-weight: bold;
+            transition: var(--transition);
+        }
+        
+        nav ul li a:hover {
+            color: var(--primary);
+        }
+        
+        .card { 
+            background-color: white; 
+            border-radius: var(--border-radius); 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+            margin-bottom: 25px; 
+            overflow: hidden; 
+        }
+        
+        .card-header { 
+            background-color: var(--primary); 
+            color: white; 
+            padding: 15px; 
+            font-weight: bold; 
+        }
+        
+        .card-body { 
+            padding: 20px; 
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: bold;
+            transition: var(--transition);
+        }
+        
+        .back-link:hover {
+            transform: translateX(-3px);
+        }
+        
+        .user-info {
+            background-color: white;
+            padding: 25px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+        }
+        
+        .user-info h2 {
+            margin-top: 0;
+            color: var(--text);
+            margin-bottom: 15px;
+        }
+        
+        .logout { 
+            color: white; 
+            text-decoration: none;
+            transition: var(--transition);
+        }
+        
+        .logout:hover {
+            opacity: 0.8;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .badge-admin {
+            background-color: var(--success-light);
+            color: var(--success);
+        }
+        
+        .badge-user {
+            background-color: var(--primary-light);
+            color: var(--primary);
+        }
+        
+        .health-data {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .health-item {
+            background-color: white;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            flex: 1;
+            min-width: 150px;
+            transition: var(--transition);
+        }
+        
+        .health-item:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .health-label {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: var(--text-light);
+        }
+        
+        .health-value {
+            font-size: 22px;
+            color: var(--primary);
+        }
+        
+        .prediction-item {
+            background-color: white;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 15px;
+            transition: var(--transition);
+        }
+        
+        .prediction-item:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .prediction-disease {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+        
+        .prediction-confidence {
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+        
+        .symptoms-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        
+        .symptom-tag {
+            background-color: var(--primary-light);
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            color: var(--primary);
+        }
+        
+        .no-data {
+            color: var(--text-light);
+            font-style: italic;
+            text-align: center;
+            padding: 30px;
+        }
+        
+        .record-item {
+            background-color: white;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: var(--transition);
+        }
+        
+        .record-item:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .record-name {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .record-type {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+            background-color: #e0e0e0;
+            margin-bottom: 10px;
+        }
+        
+        .record-type.lab {
+            background-color: var(--success-light);
+            color: var(--success);
+        }
+        
+        .record-type.prescription {
+            background-color: var(--primary-light);
+            color: var(--primary);
+        }
+        
+        .record-type.imaging {
+            background-color: var(--secondary-light);
+            color: var(--secondary);
+        }
+        
+        .record-type.vaccination {
+            background-color: var(--accent-light);
+            color: var(--accent);
+        }
+        
+        .record-details {
+            margin-top: 10px;
+            color: var(--text-light);
+        }
+        
+        .activity-item {
+            background-color: white;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: var(--transition);
+        }
+        
+        .activity-item:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .activity-type {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: var(--primary);
+        }
+        
+        .activity-details {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        .activity-stat {
+            min-width: 100px;
+        }
+        
+        .activity-label {
+            font-size: 12px;
+            color: var(--text-light);
+            margin-bottom: 3px;
+        }
+        
+        .activity-value {
+            font-weight: bold;
+            color: var(--text);
+        }
+        
+        .prescription-item {
+            background-color: white;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: var(--transition);
+        }
+        
+        .prescription-item:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .prescription-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .prescription-doctor {
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        .prescription-date {
+            color: var(--text-light);
+        }
+        
+        .prescription-medications {
+            background-color: var(--primary-light);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin: 10px 0;
+            white-space: pre-line;
+        }
+        
+        /* Tabs navigation */
+        .tabs {
+            display: flex;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: var(--border-radius);
+            font-weight: bold;
+            transition: var(--transition);
+            background-color: white;
+            color: var(--text);
+            border: 1px solid #e0e0e0;
+        }
+        
+        .tab.active {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-title">Health Assistant Admin</div>
+        <a href="{{ url_for('logout') }}" class="logout">Logout</a>
+    </header>
+    
+    <div class="container">
+        <nav>
+            <ul>
+                <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                <li><a href="{{ url_for('users') }}">Users</a></li>
+                <li><a href="{{ url_for('health_monitoring') }}">Health Monitoring</a></li>
+                <li><a href="{{ url_for('medical_records') }}">Medical Records</a></li>
+                <li><a href="{{ url_for('activity_tracking') }}">Activity Tracking</a></li>
+                <li><a href="{{ url_for('bmi_history') }}">BMI History</a></li>
+                <li><a href="{{ url_for('medical_prescriptions') }}">Prescriptions</a></li>
+            </ul>
+        </nav>
+        
+        <a href="{{ url_for('users') }}" class="back-link">← Back to Users</a>
+        
+        <div class="user-info">
+            <h2>{{ user.username }}</h2>
+            <p>Email: {{ user.email }}</p>
+            <p>Account created: {{ user.created_at }}</p>
+            <p>Role: 
+                {% if user.is_admin %}
+                    <span class="badge badge-admin">Admin</span>
+                {% else %}
+                    <span class="badge badge-user">User</span>
+                {% endif %}
+            </p>
+        </div>
+        
+        <!-- Tabs Navigation -->
+        <div class="tabs">
+            <div class="tab active" data-tab="health">Health Monitoring</div>
+            <div class="tab" data-tab="predictions">Disease Predictions</div>
+            <div class="tab" data-tab="bmi">BMI History</div>
+            <div class="tab" data-tab="activity">Activity Tracking</div>
+            <div class="tab" data-tab="records">Medical Records</div>
+            <div class="tab" data-tab="prescriptions">Prescriptions</div>
+        </div>
+        
+        <!-- Health Monitoring Tab -->
+        <div class="tab-content active" id="health-tab">
+            <div class="card">
+                <div class="card-header">Health Monitoring Data</div>
+                <div class="card-body">
+                    {% if health_data %}
+                        {% for item in health_data %}
+                            <div class="health-data">
+                                <div class="health-item">
+                                    <div class="health-label">Heart Rate</div>
+                                    <div class="health-value">{{ item.heart_rate }} bpm</div>
+                                </div>
+                                {% if item.blood_pressure %}
+                                    <div class="health-item">
+                                        <div class="health-label">Blood Pressure</div>
+                                        {% if item.blood_pressure.systolic and item.blood_pressure.diastolic %}
+                                            <div class="health-value">{{ item.blood_pressure.systolic }}/{{ item.blood_pressure.diastolic }} mmHg</div>
+                                        {% else %}
+                                            <div class="health-value">{{ item.blood_pressure }}</div>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                                <div class="health-item">
+                                    <div class="health-label">Oxygen Level</div>
+                                    <div class="health-value">{{ item.oxygen_level }}%</div>
+                                </div>
+                                {% if item.body_temperature %}
+                                    <div class="health-item">
+                                        <div class="health-label">Body Temperature</div>
+                                        <div class="health-value">{{ item.body_temperature }}°C</div>
+                                    </div>
+                                {% endif %}
+                                {% if item.glucose_level %}
+                                    <div class="health-item">
+                                        <div class="health-label">Glucose Level</div>
+                                        <div class="health-value">{{ item.glucose_level }} mg/dL</div>
+                                    </div>
+                                {% endif %}
+                                <div class="health-item">
+                                    <div class="health-label">Date</div>
+                                    <div class="health-value">{{ item.created_at }}</div>
+                                </div>
+                            </div>
+                            <hr>
+                        {% endfor %}
+                    {% else %}
+                        <div class="no-data">No health monitoring data available</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Disease Predictions Tab -->
+        <div class="tab-content" id="predictions-tab">
+            <div class="card">
+                <div class="card-header">Disease Predictions</div>
+                <div class="card-body">
+                    {% if predictions and predictions|length > 0 %}
+                        {% for pred in predictions %}
+                            <div class="prediction-item">
+                                <div class="prediction-disease">{{ pred.predicted_disease }}</div>
+                                <div class="prediction-confidence">Confidence: {{ (pred.confidence_score * 100)|round(2) }}%</div>
+                                <div class="prediction-date">Date: {{ pred.predicted_at }}</div>
+                                {% if pred.symptoms and pred.symptoms|length > 0 %}
+                                    <div class="symptoms">
+                                        <div class="symptoms-label">Symptoms:</div>
+                                        <div class="symptoms-list">
+                                            {% for symptom in pred.symptoms %}
+                                                <span class="symptom-tag">{{ symptom|replace('_', ' ')|title }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="no-data">No disease predictions available</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- BMI History Tab -->
+        <div class="tab-content" id="bmi-tab">
+            <div class="card">
+                <div class="card-header">BMI History</div>
+                <div class="card-body">
+                    {% if bmi_history and bmi_history|length > 0 %}
+                        {% for item in bmi_history %}
+                            <div class="health-data">
+                                <div class="health-item">
+                                    <div class="health-label">Height</div>
+                                    <div class="health-value">{{ item.height }} cm</div>
+                                </div>
+                                <div class="health-item">
+                                    <div class="health-label">Weight</div>
+                                    <div class="health-value">{{ item.weight }} kg</div>
+                                </div>
+                                <div class="health-item">
+                                    <div class="health-label">BMI</div>
+                                    <div class="health-value">{{ item.bmi }}</div>
+                                </div>
+                                <div class="health-item">
+                                    <div class="health-label">Category</div>
+                                    <div class="health-value">{{ item.bmi_category }}</div>
+                                </div>
+                                <div class="health-item">
+                                    <div class="health-label">Date</div>
+                                    <div class="health-value">{{ item.recorded_at }}</div>
+                                </div>
+                            </div>
+                            <hr>
+                        {% endfor %}
+                    {% else %}
+                        <div class="no-data">No BMI history available</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Activity Tracking Tab -->
+        <div class="tab-content" id="activity-tab">
+            <div class="card">
+                <div class="card-header">Activity Tracking</div>
+                <div class="card-body">
+                    {% if activity_data and activity_data|length > 0 %}
+                        {% for item in activity_data %}
+                            <div class="activity-item">
+                                <div class="activity-type">{{ item.activity_type|replace('_', ' ')|title }}</div>
+                                <div class="activity-details">
+                                    {% if item.duration %}
+                                        <div class="activity-stat">
+                                            <div class="activity-label">Duration</div>
+                                            <div class="activity-value">{{ item.duration }} min</div>
+                                        </div>
+                                    {% endif %}
+                                    
+                                    {% if item.steps %}
+                                        <div class="activity-stat">
+                                            <div class="activity-label">Steps</div>
+                                            <div class="activity-value">{{ item.steps }}</div>
+                                        </div>
+                                    {% endif %}
+                                    
+                                    {% if item.calories_burned %}
+                                        <div class="activity-stat">
+                                            <div class="activity-label">Calories</div>
+                                            <div class="activity-value">{{ item.calories_burned }} kcal</div>
+                                        </div>
+                                    {% endif %}
+                                    
+                                    <div class="activity-stat">
+                                        <div class="activity-label">Date</div>
+                                        <div class="activity-value">{{ item.activity_date }}</div>
+                                    </div>
+                                </div>
+                                
+                                {% if item.notes %}
+                                    <div class="activity-notes">
+                                        <strong>Notes:</strong> {{ item.notes }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="no-data">No activity tracking data available</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Medical Records Tab -->
+        <div class="tab-content" id="records-tab">
+            <div class="card">
+                <div class="card-header">Medical Records</div>
+                <div class="card-body">
+                    {% if medical_records and medical_records|length > 0 %}
+                        {% for record in medical_records %}
+                            <div class="record-item">
+                                <div class="record-name">{{ record.record_name }}</div>
+                                <span class="record-type {{ record.record_type }}">{{ record.record_type|replace('_', ' ')|title }}</span>
+                                
+                                <div class="record-details">
+                                    {% if record.record_date %}
+                                        <div><strong>Date:</strong> {{ record.record_date }}</div>
+                                    {% endif %}
+                                    {% if record.uploaded_at %}
+                                        <div><strong>Uploaded:</strong> {{ record.uploaded_at }}</div>
+                                    {% endif %}
+                                    {% if record.notes %}
+                                        <div><strong>Notes:</strong> {{ record.notes }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="no-data">No medical records available</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Prescriptions Tab -->
+        <div class="tab-content" id="prescriptions-tab">
+            <div class="card">
+                <div class="card-header">Medical Prescriptions</div>
+                <div class="card-body">
+                    {% if prescriptions and prescriptions|length > 0 %}
+                        {% for prescription in prescriptions %}
+                            <div class="prescription-item">
+                                <div class="prescription-header">
+                                    <div class="prescription-doctor">Dr. {{ prescription.doctor_name }}
+                                        {% if prescription.specialization %}
+                                            <span style="font-weight: normal; font-size: 14px;">({{ prescription.specialization }})</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="prescription-date">{{ prescription.created_at }}</div>
+                                </div>
+                                
+                                <div>
+                                    <strong>Patient:</strong> {{ prescription.patient_name }} 
+                                    {% if prescription.patient_age %}| Age: {{ prescription.patient_age }}{% endif %}
+                                    {% if prescription.patient_gender %}| {{ prescription.patient_gender }}{% endif %}
+                                </div>
+                                
+                                {% if prescription.allergies %}
+                                    <div style="margin-top: 5px;">
+                                        <strong>Allergies:</strong> {{ prescription.allergies }}
+                                    </div>
+                                {% endif %}
+                                
+                                {% if prescription.diagnosis %}
+                                    <div style="margin-top: 10px; font-weight: bold; color: var(--primary);">
+                                        Diagnosis: {{ prescription.diagnosis }}
+                                    </div>
+                                {% endif %}
+                                
+                                {% if prescription.medications %}
+                                    <div class="prescription-medications">
+                                        {{ prescription.medications|replace('\n', '<br>')|safe }}
+                                    </div>
+                                {% endif %}
+                                
+                                {% if prescription.instructions %}
+                                    <div style="margin-top: 10px;">
+                                        <strong>Instructions:</strong> {{ prescription.instructions }}
+                                    </div>
+                                {% endif %}
+                                
+                                {% if prescription.follow_up %}
+                                    <div style="margin-top: 10px;">
+                                        <strong>Follow-up:</strong> {{ prescription.follow_up }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="no-data">No prescriptions available</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tab navigation
+            const tabs = document.querySelectorAll('.tab');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // Remove active class from all tabs
+                    tabs.forEach(t => t.classList.remove('active'));
+                    // Add active class to clicked tab
+                    this.classList.add('active');
+                    
+                    // Hide all tab contents
+                    tabContents.forEach(content => content.classList.remove('active'));
+                    
+                    // Show the corresponding tab content
+                    const tabId = this.getAttribute('data-tab');
+                    document.getElementById(tabId + '-tab').classList.add('active');
+                });
+            });
+        });
+    </script>
+</body>
+</html> 

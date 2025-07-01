@@ -1,0 +1,626 @@
+{% extends "includes/layout.html" %}
+
+{% block additional_styles %}
+<style>
+  /* Dashboard specific styles */
+  #dashboard {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  /* Grid layout for the dashboard */
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 25px;
+    margin-bottom: 30px;
+  }
+  
+  @media (max-width: 992px) {
+    .dashboard-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  /* Fix text visibility in cards */
+  .dashboard-card {
+    background-color: var(--background-card);
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: var(--card-shadow);
+    transition: all 0.3s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    margin-bottom: 20px;
+  }
+  
+  .dashboard-card .card-body {
+    flex: 1;
+    padding: 20px;
+  }
+  
+  .dashboard-card .card-footer {
+    padding: 15px 20px;
+    border-top: 1px solid #eee;
+    text-align: center;
+  }
+  
+  .card-header {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 15px 20px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  }
+  
+  .card-header h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    color: white;
+  }
+  
+  .card-header h3 i {
+    margin-right: 10px;
+  }
+  
+  /* Health Stats */
+  .health-stat {
+    margin-bottom: 15px;
+  }
+  
+  .stat-label {
+    color: var(--text-medium);
+    font-size: 0.9rem;
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+  }
+  
+  .stat-value {
+    color: var(--text-dark);
+    font-size: 1.1rem;
+    font-weight: 600;
+    display: block;
+    margin-bottom: 8px;
+  }
+  
+  .stat-progress {
+    height: 6px;
+    background-color: #e9ecef;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  
+  .progress-bar {
+    height: 100%;
+    background-color: var(--primary-color);
+    border-radius: 3px;
+  }
+  
+  /* Activity Stats */
+  .activity-stat {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .activity-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    background-color: var(--primary-color);
+    color: white;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+  
+  .activity-info {
+    flex: 1;
+  }
+  
+  .activity-value {
+    font-size: 1.1rem;
+    font-weight: 600;
+    display: block;
+    color: var(--text-dark);
+  }
+  
+  .activity-label {
+    font-size: 0.9rem;
+    color: var(--text-medium);
+    display: block;
+  }
+  
+  /* Fix progress circles to show percentage text */
+  .progress-circle {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: #e9ecef;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-dark);
+  }
+  
+  .progress-circle::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: conic-gradient(var(--primary-color) calc(var(--percentage) * 1%), transparent 0);
+    -webkit-mask: radial-gradient(white 55%, transparent 0);
+    mask: radial-gradient(white 55%, transparent 0);
+  }
+  
+  /* Medication List */
+  .medication-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .medication-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .medication-time {
+    font-size: 0.9rem;
+    color: var(--text-medium);
+    width: 80px;
+  }
+  
+  .medication-info {
+    flex: 1;
+  }
+  
+  .medication-name {
+    font-weight: 600;
+    display: block;
+    color: var(--text-dark);
+    font-size: 1rem;
+  }
+  
+  .medication-dose {
+    font-size: 0.9rem;
+    color: var(--text-medium);
+  }
+  
+  .medication-status {
+    margin-left: 10px;
+  }
+  
+  .medication-status.completed i {
+    color: var(--success-color);
+  }
+  
+  .medication-status.upcoming i {
+    color: var(--accent-color);
+  }
+  
+  /* Quick Actions */
+  .quick-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 15px;
+  }
+  
+  .quick-action-btn {
+    background-color: #f8f9fa;
+    color: var(--text-dark);
+    border-radius: 10px;
+    text-align: center;
+    padding: 15px 10px;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    border: 1px solid #eee;
+  }
+  
+  .quick-action-btn:hover {
+    background-color: var(--primary-color);
+    color: white;
+    transform: translateY(-5px);
+    text-decoration: none;
+  }
+  
+  .quick-action-btn i {
+    font-size: 24px;
+    margin-bottom: 8px;
+  }
+  
+  .quick-action-btn.emergency i {
+    color: var(--warning-color);
+  }
+  
+  .quick-action-btn.emergency:hover i {
+    color: white;
+  }
+  
+  /* Tips Carousel */
+  .tips-carousel {
+    margin-top: 25px;
+  }
+  
+  .tips-slider {
+    position: relative;
+    height: 80px;
+  }
+  
+  .tip-slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.4s ease;
+    transform: translateY(10px);
+    text-align: center;
+    padding: 0 20px;
+  }
+  
+  .tip-slide.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+  
+  .tip-slide p {
+    margin: 0;
+    font-size: 1.1rem;
+    color: var(--text-dark);
+    line-height: 1.5;
+  }
+  
+  .slider-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 15px;
+  }
+  
+  .prev-tip,
+  .next-tip {
+    background: none;
+    border: none;
+    color: var(--text-medium);
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 5px;
+    transition: color 0.3s ease;
+    width: auto;
+    margin: 0;
+  }
+  
+  .prev-tip:hover,
+  .next-tip:hover {
+    color: var(--primary-color);
+    background: none;
+    transform: none;
+  }
+  
+  .slider-dots {
+    display: flex;
+    margin: 0 15px;
+  }
+  
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #ddd;
+    margin: 0 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .dot.active {
+    background-color: var(--primary-color);
+  }
+
+  /* Emoji Picker Container */
+  .emoji-picker-container {
+    position: absolute;
+    left: 50%;
+    bottom: 100px;
+    transform: translateX(-50%);
+    z-index: 9999;
+    display: none;
+    max-width: 320px;
+    width: 100%;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+  }
+
+  body.show-emoji-picker .emoji-picker-container {
+    display: block;
+  }
+
+  /* User Message Attachment */
+  .user-message .attachment {
+    max-width: 200px;
+    margin-top: 8px;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Dashboard Section -->
+<section id="dashboard">
+  <h2 class="personalized-heading">Health Dashboard</h2>
+  
+  <!-- Health Metrics Summary -->
+  <div class="dashboard-grid">
+    <!-- Health Stats Section -->
+    <div class="dashboard-card">
+      <div class="card-header">
+        <h3><i class="fas fa-heartbeat"></i> Health Status</h3>
+      </div>
+      <div class="card-body">
+        <div class="health-stat">
+          <span class="stat-label">Heart Rate</span>
+          <span class="stat-value">72 bpm</span>
+          <div class="stat-progress">
+            <div class="progress-bar" style="width: 70%"></div>
+          </div>
+        </div>
+        <div class="health-stat">
+          <span class="stat-label">Blood Pressure</span>
+          <span class="stat-value">120/80</span>
+          <div class="stat-progress">
+            <div class="progress-bar" style="width: 65%"></div>
+          </div>
+        </div>
+        <div class="health-stat">
+          <span class="stat-label">Oxygen Level</span>
+          <span class="stat-value">98%</span>
+          <div class="stat-progress">
+            <div class="progress-bar" style="width: 95%"></div>
+          </div>
+        </div>
+        <div class="health-stat">
+          <span class="stat-label">Sleep</span>
+          <span class="stat-value">7.5 hrs</span>
+          <div class="stat-progress">
+            <div class="progress-bar" style="width: 80%"></div>
+          </div>
+        </div>
+      </div>
+      <div class="card-footer">
+        <a href="{{ url_for('health_monitor') }}" class="btn-small">Update Stats</a>
+      </div>
+    </div>
+
+    <!-- Activity Tracking -->
+    <div class="dashboard-card">
+      <div class="card-header">
+        <h3><i class="fas fa-running"></i> Activity Today</h3>
+      </div>
+      <div class="card-body">
+        <div class="activity-stat">
+          <div class="activity-icon">
+            <i class="fas fa-shoe-prints"></i>
+          </div>
+          <div class="activity-info">
+            <span class="activity-value">6,248</span>
+            <span class="activity-label">Steps</span>
+          </div>
+          <div class="activity-progress">
+            <div class="progress-circle" style="--percentage: 62%">62%</div>
+          </div>
+        </div>
+        <div class="activity-stat">
+          <div class="activity-icon">
+            <i class="fas fa-fire"></i>
+          </div>
+          <div class="activity-info">
+            <span class="activity-value">325</span>
+            <span class="activity-label">Calories</span>
+          </div>
+          <div class="activity-progress">
+            <div class="progress-circle" style="--percentage: 45%">45%</div>
+          </div>
+        </div>
+        <div class="activity-stat">
+          <div class="activity-icon">
+            <i class="fas fa-stopwatch"></i>
+          </div>
+          <div class="activity-info">
+            <span class="activity-value">32</span>
+            <span class="activity-label">Active Minutes</span>
+          </div>
+          <div class="activity-progress">
+            <div class="progress-circle" style="--percentage: 30%">30%</div>
+          </div>
+        </div>
+      </div>
+      <div class="card-footer">
+        <a href="{{ url_for('activity') }}" class="btn-small">View Activity</a>
+      </div>
+    </div>
+
+    <!-- Medication Reminders -->
+    <div class="dashboard-card">
+      <div class="card-header">
+        <h3><i class="fas fa-pills"></i> Medication Reminders</h3>
+      </div>
+      <div class="card-body">
+        <ul class="medication-list">
+          <li class="medication-item">
+            <div class="medication-time">08:00 AM</div>
+            <div class="medication-info">
+              <span class="medication-name">Vitamin D</span>
+              <span class="medication-dose">1000 IU</span>
+            </div>
+            <div class="medication-status completed">
+              <i class="fas fa-check-circle"></i>
+            </div>
+          </li>
+          <li class="medication-item">
+            <div class="medication-time">01:00 PM</div>
+            <div class="medication-info">
+              <span class="medication-name">Omega-3</span>
+              <span class="medication-dose">500mg</span>
+            </div>
+            <div class="medication-status upcoming">
+              <i class="fas fa-clock"></i>
+            </div>
+          </li>
+          <li class="medication-item">
+            <div class="medication-time">09:00 PM</div>
+            <div class="medication-info">
+              <span class="medication-name">Magnesium</span>
+              <span class="medication-dose">250mg</span>
+            </div>
+            <div class="medication-status upcoming">
+              <i class="fas fa-clock"></i>
+            </div>
+          </li>
+        </ul>
+      </div>
+      <div class="card-footer">
+        <a href="{{ url_for('medication_reminder') }}" class="btn-small">Manage Medications</a>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="dashboard-card">
+      <div class="card-header">
+        <h3><i class="fas fa-bolt"></i> Quick Actions</h3>
+      </div>
+      <div class="card-body">
+        <div class="quick-actions">
+          <a href="{{ url_for('disease_prediction') }}" class="quick-action-btn">
+            <i class="fas fa-stethoscope"></i>
+            <span>Disease Prediction</span>
+          </a>
+          <a href="{{ url_for('bmi') }}" class="quick-action-btn">
+            <i class="fas fa-weight"></i>
+            <span>BMI Calculator</span>
+          </a>
+          <a href="{{ url_for('health_advice') }}" class="quick-action-btn">
+            <i class="fas fa-comment-medical"></i>
+            <span>Health Advice</span>
+          </a>
+          <a href="{{ url_for('emergency') }}" class="quick-action-btn emergency">
+            <i class="fas fa-ambulance"></i>
+            <span>Emergency</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Health Tips Carousel -->
+  <div class="dashboard-card tips-carousel">
+    <div class="card-header">
+      <h3><i class="fas fa-lightbulb"></i> Health Tips</h3>
+    </div>
+    <div class="card-body">
+      <div class="tips-slider">
+        <div class="tip-slide active">
+          <p>Drink at least 8 glasses of water daily to stay hydrated.</p>
+        </div>
+        <div class="tip-slide">
+          <p>Exercise for at least 30 minutes a day for better cardiovascular health.</p>
+        </div>
+        <div class="tip-slide">
+          <p>Include more fruits and vegetables in your diet for essential nutrients.</p>
+        </div>
+        <div class="tip-slide">
+          <p>Aim for 7-8 hours of quality sleep every night for better overall health.</p>
+        </div>
+      </div>
+      <div class="slider-controls">
+        <button class="prev-tip"><i class="fas fa-chevron-left"></i></button>
+        <div class="slider-dots">
+          <span class="dot active"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+        </div>
+        <button class="next-tip"><i class="fas fa-chevron-right"></i></button>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block additional_scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Tips carousel functionality
+    const slides = document.querySelectorAll('.tip-slide');
+    const dots = document.querySelectorAll('.dot');
+    const prevBtn = document.querySelector('.prev-tip');
+    const nextBtn = document.querySelector('.next-tip');
+    let currentSlide = 0;
+    
+    function showSlide(index) {
+      // Hide all slides
+      slides.forEach(slide => {
+        slide.classList.remove('active');
+      });
+      
+      // Remove active class from all dots
+      dots.forEach(dot => {
+        dot.classList.remove('active');
+      });
+      
+      // Show the current slide
+      slides[index].classList.add('active');
+      
+      // Add active class to current dot
+      dots[index].classList.add('active');
+    }
+    
+    // Next slide
+    function nextSlide() {
+      currentSlide = (currentSlide + 1) % slides.length;
+      showSlide(currentSlide);
+    }
+    
+    // Previous slide
+    function prevSlide() {
+      currentSlide = (currentSlide - 1 + slides.length) % slides.length;
+      showSlide(currentSlide);
+    }
+    
+    // Add event listeners
+    nextBtn.addEventListener('click', nextSlide);
+    prevBtn.addEventListener('click', prevSlide);
+    
+    // Add event listeners to dots
+    dots.forEach((dot, index) => {
+      dot.addEventListener('click', () => {
+        currentSlide = index;
+        showSlide(currentSlide);
+      });
+    });
+    
+    // Auto-advance slides every 5 seconds
+    setInterval(nextSlide, 5000);
+  });
+</script>
+{% endblock %}

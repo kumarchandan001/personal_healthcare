@@ -1,0 +1,486 @@
+{% extends "includes/layout.html" %}
+
+{% block title %}Health Monitoring{% endblock %}
+
+{% block additional_styles %}
+<style>
+  .health-monitor-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    margin-bottom: 2rem;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  @media (min-width: 992px) {
+    .health-monitor-container {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  
+  .health-monitor-card {
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+  }
+  
+  .health-monitor-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 20px rgba(0,0,0,0.15);
+  }
+  
+  .health-input-section {
+    background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+    color: white;
+  }
+  
+  .health-input-section h3 {
+    color: white;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+    padding-bottom: 0.75rem;
+    margin-bottom: 1rem;
+    font-size: 1.4rem;
+  }
+  
+  .health-monitor-section {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+  }
+  
+  .health-data-history {
+    min-height: 300px;
+  }
+  
+  .health-data-history h3 {
+    color: var(--text-dark);
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 0.75rem;
+    margin-bottom: 1rem;
+    font-size: 1.4rem;
+  }
+  
+  .health-metric {
+    margin-bottom: 1.5rem;
+  }
+  
+  .health-metric label {
+    color: white;
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    display: block;
+  }
+  
+  .health-metric input {
+    background-color: rgba(255, 255, 255, 0.9);
+    border: none;
+    font-size: 1.05rem;
+    border-radius: 8px;
+    width: 100%;
+    padding: 12px;
+  }
+  
+  .health-submit-btn {
+    background-color: white;
+    color: var(--primary-color);
+    font-weight: 600;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 1.05rem;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+    margin-top: 1rem;
+  }
+  
+  .health-submit-btn:hover {
+    background-color: rgba(255, 255, 255, 0.9);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  }
+  
+  .history-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+  }
+  
+  .history-table th, .history-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  
+  .history-table th {
+    background-color: #f8fafc;
+    font-weight: 600;
+    color: var(--text-dark);
+  }
+  
+  .history-table tr:hover td {
+    background-color: #f1f5f9;
+  }
+  
+  .health-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+  
+  .health-stat-card {
+    background-color: #f8fafc;
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  }
+  
+  .health-stat-value {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: var(--primary-color);
+    margin: 0.5rem 0;
+  }
+  
+  .health-stat-label {
+    font-size: 0.9rem;
+    color: var(--text-medium);
+  }
+  
+  .health-stat-icon {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+  }
+  
+  .notes-textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    resize: vertical;
+    margin-top: 0.5rem;
+    background-color: rgba(255, 255, 255, 0.9);
+  }
+  
+  .empty-state {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-medium);
+  }
+  
+  .empty-state i {
+    font-size: 3rem;
+    color: #cbd5e1;
+    margin-bottom: 1rem;
+  }
+  
+  .date-select {
+    margin-bottom: 1rem;
+  }
+  
+  .date-select select {
+    padding: 0.5rem;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+    background-color: white;
+    margin-left: 0.5rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Health Monitoring Section -->
+<section id="health-monitor" class="health-monitor-section">
+  <h2 class="personalized-heading">Health Monitoring</h2>
+  
+  <div class="health-monitor-container">
+    <!-- Left Column: Input Section -->
+    <div class="health-monitor-card health-input-section">
+      <h3><i class="fas fa-heartbeat"></i> Enter Health Data</h3>
+      
+      <form id="healthDataForm">
+        <div class="health-metric">
+          <label for="blood-pressure">Blood Pressure (mmHg)</label>
+          <input type="text" id="blood-pressure" placeholder="e.g., 120/80">
+        </div>
+        
+        <div class="health-metric">
+          <label for="heart-rate">Heart Rate (bpm)</label>
+          <input type="number" id="heart-rate" placeholder="e.g., 72">
+        </div>
+        
+        <div class="health-metric">
+          <label for="glucose-level">Blood Glucose (mg/dL)</label>
+          <input type="number" id="glucose-level" placeholder="e.g., 95">
+        </div>
+        
+        <div class="health-metric">
+          <label for="oxygen-level">Oxygen Saturation (%)</label>
+          <input type="number" id="oxygen-level" placeholder="e.g., 98">
+        </div>
+        
+        <div class="health-metric">
+          <label for="body-temperature">Body Temperature (°F)</label>
+          <input type="number" step="0.1" id="body-temperature" placeholder="e.g., 98.6">
+        </div>
+        
+        <div class="health-metric">
+          <label for="health-notes">Notes</label>
+          <textarea id="health-notes" class="notes-textarea" rows="3" placeholder="Add any relevant details about your health..."></textarea>
+        </div>
+        
+        <button type="submit" class="health-submit-btn">
+          <i class="fas fa-save"></i> Save Health Data
+        </button>
+      </form>
+    </div>
+    
+    <!-- Right Column: History & Stats -->
+    <div class="health-monitor-card health-data-history">
+      <h3><i class="fas fa-chart-line"></i> Health History</h3>
+      
+      <div class="date-select">
+        <label for="history-period">View data for:</label>
+        <select id="history-period">
+          <option value="7">Last 7 days</option>
+          <option value="30" selected>Last 30 days</option>
+          <option value="90">Last 3 months</option>
+          <option value="180">Last 6 months</option>
+        </select>
+      </div>
+      
+      <div class="health-stats-grid">
+        <div class="health-stat-card">
+          <div class="health-stat-icon">
+            <i class="fas fa-heartbeat"></i>
+          </div>
+          <div class="health-stat-value">72</div>
+          <div class="health-stat-label">Avg. Heart Rate</div>
+        </div>
+        
+        <div class="health-stat-card">
+          <div class="health-stat-icon">
+            <i class="fas fa-tachometer-alt"></i>
+          </div>
+          <div class="health-stat-value">120/80</div>
+          <div class="health-stat-label">Avg. Blood Pressure</div>
+        </div>
+        
+        <div class="health-stat-card">
+          <div class="health-stat-icon">
+            <i class="fas fa-tint"></i>
+          </div>
+          <div class="health-stat-value">95</div>
+          <div class="health-stat-label">Avg. Glucose</div>
+        </div>
+      </div>
+      
+      <table class="history-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>BP</th>
+            <th>HR</th>
+            <th>Glucose</th>
+            <th>O₂</th>
+            <th>Temp</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Today</td>
+            <td>120/80</td>
+            <td>72</td>
+            <td>95</td>
+            <td>98%</td>
+            <td>98.6°F</td>
+          </tr>
+          <tr>
+            <td>Yesterday</td>
+            <td>118/78</td>
+            <td>70</td>
+            <td>92</td>
+            <td>99%</td>
+            <td>98.4°F</td>
+          </tr>
+          <tr>
+            <td>Jul 12, 2023</td>
+            <td>122/82</td>
+            <td>74</td>
+            <td>98</td>
+            <td>97%</td>
+            <td>98.8°F</td>
+          </tr>
+          <!-- More rows would be added dynamically -->
+        </tbody>
+      </table>
+      
+      <!-- Empty state (shown when no data exists) -->
+      <div class="empty-state hidden">
+        <i class="fas fa-heartbeat"></i>
+        <p>No health data recorded yet. Start tracking your health metrics to see your history here.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+  {% endblock %}
+
+{% block additional_scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const healthDataForm = document.getElementById('healthDataForm');
+    const historyPeriodSelect = document.getElementById('history-period');
+    
+    // Handle form submission
+    healthDataForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      // Get form values
+      const bloodPressureInput = document.getElementById('blood-pressure').value;
+      const heartRate = document.getElementById('heart-rate').value;
+      const glucoseLevel = document.getElementById('glucose-level').value;
+      const oxygenLevel = document.getElementById('oxygen-level').value;
+      const bodyTemperature = document.getElementById('body-temperature').value;
+      const healthNotes = document.getElementById('health-notes').value;
+      
+      // Validate form
+      if (!bloodPressureInput || !heartRate) {
+        alert('Please enter at least blood pressure and heart rate values.');
+        return;
+      }
+      
+      // Parse blood pressure (format: "120/80") into systolic and diastolic components
+      let bloodPressure;
+      if (bloodPressureInput.includes('/')) {
+        const [systolic, diastolic] = bloodPressureInput.split('/');
+        bloodPressure = {
+          systolic: parseInt(systolic.trim()),
+          diastolic: parseInt(diastolic.trim())
+        };
+      } else {
+        bloodPressure = bloodPressureInput;
+      }
+      
+      // Create data object to send to server
+      const healthData = {
+        heart_rate: parseInt(heartRate),
+        blood_pressure: bloodPressure,
+        oxygen_level: parseInt(oxygenLevel),
+        body_temperature: bodyTemperature ? parseFloat(bodyTemperature) : null,
+        glucose_level: glucoseLevel ? parseFloat(glucoseLevel) : null,
+        notes: healthNotes
+      };
+      
+      // Send data to server
+      fetch('/api/health-monitoring', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(healthData)
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          alert('Health data saved successfully!');
+          // Reset form
+          healthDataForm.reset();
+          // Refresh health history data
+          loadHealthHistory(historyPeriodSelect.value);
+        } else {
+          alert('Error saving health data: ' + (data.error || 'Unknown error'));
+        }
+      })
+      .catch(error => {
+        console.error('Error saving health data:', error);
+        alert('Failed to save health data. Please try again later.');
+      });
+    });
+    
+    // Function to load health history data
+    function loadHealthHistory(days) {
+      fetch(`/api/health-history?days=${days}`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.success && data.history) {
+            updateHealthHistoryUI(data.history);
+          } else {
+            console.error('Error loading health history:', data.error);
+          }
+        })
+        .catch(error => {
+          console.error('Error loading health history:', error);
+        });
+    }
+    
+    // Function to update the history UI with data
+    function updateHealthHistoryUI(historyData) {
+      const tableBody = document.querySelector('.history-table tbody');
+      const emptyState = document.querySelector('.empty-state');
+      
+      // Clear existing rows
+      tableBody.innerHTML = '';
+      
+      if (historyData.length === 0) {
+        // Show empty state if no data
+        emptyState.classList.remove('hidden');
+        document.querySelector('.history-table').classList.add('hidden');
+      } else {
+        // Hide empty state and show table
+        emptyState.classList.add('hidden');
+        document.querySelector('.history-table').classList.remove('hidden');
+        
+        // Add history data to the table
+        historyData.forEach(item => {
+          const row = document.createElement('tr');
+          
+          // Format date
+          const date = new Date(item.created_at);
+          const dateString = date.toLocaleDateString();
+          
+          // Format blood pressure
+          let bpString = '-';
+          if (item.blood_pressure) {
+            if (typeof item.blood_pressure === 'object') {
+              bpString = `${item.blood_pressure.systolic}/${item.blood_pressure.diastolic}`;
+            } else {
+              bpString = item.blood_pressure;
+            }
+          }
+          
+          // Build the row HTML
+          row.innerHTML = `
+            <td>${dateString}</td>
+            <td>${bpString}</td>
+            <td>${item.heart_rate || '-'}</td>
+            <td>${item.glucose_level || '-'}</td>
+            <td>${item.oxygen_level ? item.oxygen_level + '%' : '-'}</td>
+            <td>${item.body_temperature ? item.body_temperature + '°F' : '-'}</td>
+          `;
+          
+          tableBody.appendChild(row);
+        });
+      }
+    }
+    
+    // Handle period selection change
+    historyPeriodSelect.addEventListener('change', function() {
+      loadHealthHistory(this.value);
+    });
+    
+    // Load initial health history data
+    loadHealthHistory(historyPeriodSelect.value);
+  });
+</script>
+{% endblock %}
