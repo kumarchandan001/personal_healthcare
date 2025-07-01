@@ -14,6 +14,11 @@ from itsdangerous import URLSafeTimedSerializer
 import flask
 import pickle
 
+
+from flask_cors import CORS
+CORS(app)
+
+
 app = Flask(__name__)
 app.secret_key = "health_assistant_fixed_secret_key_updated_2"
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
